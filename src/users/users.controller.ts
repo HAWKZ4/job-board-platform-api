@@ -25,7 +25,7 @@ export class UsersController {
 
   @Get('/:id')
   async getUser(@Param('id') id: string) {
-    return this.usersService.getUser(parseInt(id));
+    return this.usersService.getUser({ id: parseInt(id) });
   }
 
   @Post()
