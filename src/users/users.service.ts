@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { hash } from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -22,12 +28,29 @@ export class UsersService {
     return this.userRepo.find();
   }
 
-  async getUser(id: number) {
-    return this.userRepo.findOne({ where: { id } });
+  async getUser(query: { id?: number; email?: string }) {
+    if (!query.id && !query.email) {
+      throw new BadRequestException('Must provide either id or email');
+    }
+    const user = await this.userRepo.findOne({ where: query });
+
+    return user;
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const user = this.userRepo.create(createUserDto);
+    const existingUser = await this.userRepo.findOne({
+      where: { email: createUserDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const hashedPassword = await hash(createUserDto.password, 10);
+    const user = this.userRepo.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
     return this.userRepo.save(user);
   }
 
