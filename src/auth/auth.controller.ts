@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -8,11 +8,19 @@ import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from 'src/users/dtos/user.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Serialize(UserDto)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMe(@CurrentUser() user: User) {
+    return user;
+  }
+
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async login(
