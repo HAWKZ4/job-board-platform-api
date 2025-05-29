@@ -12,6 +12,10 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
+  refreshToken?: string;
+
+  @IsOptional()
+  @IsString()
   password?: string;
 
   @IsOptional() // Optional so it defaults to 'user' if not provided

@@ -33,7 +33,7 @@ export class UsersService {
       throw new BadRequestException('Must provide either id or email');
     }
     const user = await this.userRepo.findOne({ where: query });
-
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 

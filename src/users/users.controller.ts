@@ -14,17 +14,15 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
-import { CurrentUser } from 'src/auth/current-user.decorator';
-import { User } from './entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Serialize(UserDto)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async getAllUsers(@CurrentUser() user: User) {
+  async getAllUsers() {
     return this.usersService.getAllUsers();
   }
 

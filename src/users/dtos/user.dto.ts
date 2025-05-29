@@ -3,6 +3,9 @@ import { Role } from 'src/common/role.enum';
 
 export class UserDto {
   @Expose()
+  id: string;
+
+  @Expose()
   name: string;
 
   @Expose()
@@ -10,4 +13,10 @@ export class UserDto {
 
   @Expose()
   role: Role; // Use the enum type, not string
+
+  @Expose()
+  created_at: Date;
+
+  @Expose()
+  updated_at: Date;
 }
