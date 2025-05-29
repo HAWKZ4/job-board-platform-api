@@ -9,11 +9,36 @@ import { RegisterUserDto } from './dtos/register-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from 'src/users/dtos/user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Serialize(UserDto)
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res({ passthrough: true }) response: Response) {
+    const inProduction =
+      this.configService.getOrThrow('NODE_ENV') === 'production';
+
+    response.clearCookie('Authentication', {
+      httpOnly: true,
+      secure: inProduction,
+      sameSite: 'strict',
+    });
+
+    response.clearCookie('Refresh', {
+      httpOnly: true,
+      secure: inProduction,
+      sameSite: 'strict',
+    });
+
+    response.json({ message: 'Logged out successfully' });
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
