@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { TokenPayload } from '../token-payload.interface';
 import { UsersService } from 'src/users/users.service';
+import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -20,7 +21,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: TokenPayload) {
-    return this.usersService.getUser({ id: parseInt(payload.userId) });
+  async validate(payload: TokenPayload): Promise<SafeUserDto> {
+    const user = await this.usersService.getUser({
+      id: parseInt(payload.userId),
+    });
+
+    return user.toSafeUser();
   }
 }
