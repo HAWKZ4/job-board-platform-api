@@ -40,12 +40,6 @@ export class AuthController {
     response.json({ message: 'Logged out successfully' });
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async getMe(@CurrentUser() user: User) {
-    return user;
-  }
-
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async login(
