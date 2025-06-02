@@ -9,7 +9,6 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { hash } from 'bcryptjs';
 
 @Injectable()
@@ -68,11 +67,6 @@ export class UsersService {
   async viewProfile(id: number) {
     const user = await this.findUserOrThrow(id);
     return user;
-  }
-  async updateProfile(id: number, updateProfileDto: UpdateProfileDto) {
-    const user = await this.findUserOrThrow(id);
-    Object.assign(user, updateProfileDto);
-    return this.userRepo.save(user);
   }
 
   async updateRefreshToken(userId: number, refreshToken: string) {

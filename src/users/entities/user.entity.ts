@@ -33,6 +33,9 @@ export class User {
   })
   role: Role;
 
+  @Column({ nullable: true })
+  resume_url: string;
+
   @CreateDateColumn()
   created_at: Date;
 
