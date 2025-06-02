@@ -8,4 +8,8 @@ export class ProfilesService {
   async getAllProfiles() {
     return this.usersService.getAllUsers();
   }
+
+  async getUserProfile(id: string) {
+    return this.usersService.getUser( {id: parseInt(id)} );
+  }
 }

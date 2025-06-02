@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { ProfileDto } from './dtos/profile.dto';
@@ -10,5 +10,10 @@ export class ProfilesController {
   @Get()
   async getAllProfiles() {
     return this.profilesService.getAllProfiles();
+  }
+
+  @Get('/:id')
+  async getProfile(@Param('id') id: string) {
+    return this.profilesService.getUserProfile(id);
   }
 }
