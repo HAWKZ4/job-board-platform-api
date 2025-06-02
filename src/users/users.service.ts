@@ -54,7 +54,7 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async updateUser(id: number, updateUserDto: Partial<UpdateUserDto>) {
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findUserOrThrow(id);
     Object.assign(user, updateUserDto);
     return this.userRepo.save(user);
@@ -72,6 +72,12 @@ export class UsersService {
   async updateProfile(id: number, updateProfileDto: UpdateProfileDto) {
     const user = await this.findUserOrThrow(id);
     Object.assign(user, updateProfileDto);
+    return this.userRepo.save(user);
+  }
+
+  async updateRefreshToken(userId: number, refreshToken: string) {
+    const user = await this.findUserOrThrow(userId);
+    user.refreshToken = refreshToken;
     return this.userRepo.save(user);
   }
 }

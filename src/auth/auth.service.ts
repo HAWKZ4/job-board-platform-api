@@ -62,9 +62,9 @@ export class AuthService {
       expiresIn: `${this.configService.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION_MS')}ms`,
     });
 
-    await this.usersService.updateUser(user.id, {
-      refreshToken: await hash(refreshToken, 10),
-    });
+    const hashedRefreshToken = await hash(refreshToken, 10);
+
+    await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
 
     response.cookie('Authentication', accessToken, {
       httpOnly: true,
