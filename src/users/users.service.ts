@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -59,9 +60,13 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async deleteUser(id: number) {
-    const user = await this.findUserOrThrow(id);
-    return this.userRepo.remove(user);
+  async deleteUser(user: User) {
+    try {
+      await this.userRepo.remove(user);
+      return { message: 'Deleted successfully' };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete user');
+    }
   }
 
   async viewProfile(id: number) {

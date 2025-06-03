@@ -60,6 +60,7 @@ export class UsersController {
 
   @Delete('/:id')
   async deleteUser(@Param('id') id: string) {
-    return this.usersService.deleteUser(parseInt(id));
+    const user = await this.usersService.getUser({ id: parseInt(id) });
+    return this.usersService.deleteUser(user);
   }
 }

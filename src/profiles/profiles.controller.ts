@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { ProfileDto } from './dtos/profile.dto';
@@ -6,6 +14,7 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { DeleteOwnProfileDto } from './dtos/delete-own-profile.dto';
 
 @Serialize(ProfileDto)
 @Controller('profiles')
@@ -31,5 +40,14 @@ export class ProfilesController {
       user.id.toString(),
       updateProfileDto,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete()
+  async deleteOwnProfile(
+    @CurrentUser() user: User,
+    @Body() deleteOwnProfileDto: DeleteOwnProfileDto,
+  ) {
+    return this.profilesService.deleteOwnProfile(user.id, deleteOwnProfileDto);
   }
 }
