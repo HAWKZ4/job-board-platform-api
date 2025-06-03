@@ -1,7 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { ProfileDto } from './dtos/profile.dto';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Serialize(ProfileDto)
 @Controller('profiles')
@@ -15,5 +19,17 @@ export class ProfilesController {
   @Get('/:id')
   async getProfile(@Param('id') id: string) {
     return this.profilesService.getUserProfile(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    return this.profilesService.updateProfile(
+      user.id.toString(),
+      updateProfileDto,
+    );
   }
 }
