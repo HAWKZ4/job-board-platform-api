@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { hash } from 'bcryptjs';
+import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -78,5 +79,11 @@ export class UsersService {
     const user = await this.findUserOrThrow(userId);
     user.refreshToken = refreshToken;
     return this.userRepo.save(user);
+  }
+
+  async changePassword(user: User, dto: ChangePasswordDto) {
+    const hashedPassword = await hash(dto.newPassword, 10);
+    user.password = hashedPassword;
+    await this.userRepo.save(user);
   }
 }
