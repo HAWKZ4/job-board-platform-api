@@ -38,4 +38,8 @@ export class ProfilesService {
     await this.usersService.changePassword(user, dto);
     return { message: 'Password changed successfully' };
   }
+
+  async updateResume(userId: number, resumeUrl: string) {
+    await this.usersService.updateUser(userId, { resume_url: resumeUrl });
+  }
 }

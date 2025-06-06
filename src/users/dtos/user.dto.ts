@@ -15,7 +15,7 @@ export class UserDto {
   role: Role; // Use the enum type, not string
 
   @Expose()
-  resume_url: String;
+  resume_url: string;
 
   @Expose()
   created_at: Date;

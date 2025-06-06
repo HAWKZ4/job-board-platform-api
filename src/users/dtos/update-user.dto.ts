@@ -10,6 +10,10 @@ export class UpdateUserDto {
   @IsEmail()
   email?: string;
 
+  @IsOptional()
+  @IsString()
+  resume_url?: string;
+
   @IsOptional() // Optional so it defaults to 'user' if not provided
   @IsEnum(Role)
   role?: Role;
