@@ -57,6 +57,17 @@ export class UsersService {
 
   async updateUser(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findUserOrThrow(id);
+
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const exisitngUser = await this.userRepo.findOne({
+        where: { email: updateUserDto.email },
+      });
+
+      if (exisitngUser && exisitngUser.id !== user.id) {
+        throw new ConflictException('Email already in use');
+      }
+    }
+
     Object.assign(user, updateUserDto);
     return this.userRepo.save(user);
   }
