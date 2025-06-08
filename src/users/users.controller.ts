@@ -19,27 +19,31 @@ import { Roles } from 'src/auth/decorator/roles.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { User } from './entities/user.entity';
+import { SuccessResponse } from 'src/common/dtos/response.dto';
+import { transformToDto } from 'src/utils/transform-to-dto';
 
 @Roles(Role.ADMIN)
 @UseGuards(RolesGuard)
 @UseGuards(JwtAuthGuard)
-@Serialize(UserDto)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Serialize(UserDto)
   @Roles(Role.ADMIN, Role.USER)
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@CurrentUser() user: User) {
-    return user;
+    return this.usersService.getUser({ id: user.id });
   }
 
+  @Serialize(UserDto)
   @Get()
   async getAllUsers() {
     return this.usersService.getAllUsers();
   }
 
+  @Serialize(UserDto)
   @Get('/:id')
   async getUser(@Param('id') id: string) {
     return this.usersService.getUser({ id: parseInt(id) });
@@ -47,7 +51,11 @@ export class UsersController {
 
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
+    const user = await this.usersService.createUser(createUserDto);
+    return new SuccessResponse(
+      'User created successfully',
+      transformToDto(UserDto, user),
+    );
   }
 
   @Patch('/:id')
@@ -55,7 +63,14 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.updateUser(parseInt(id), updateUserDto);
+    const user = await this.usersService.updateUser(
+      parseInt(id),
+      updateUserDto,
+    );
+    return new SuccessResponse(
+      'User updated successfully',
+      transformToDto(UserDto, user),
+    );
   }
 
   @Delete('/:id')
