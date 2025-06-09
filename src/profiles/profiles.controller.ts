@@ -3,11 +3,14 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   InternalServerErrorException,
+  NotFoundException,
   Param,
   Patch,
   Post,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -29,6 +32,8 @@ import { SuccessResponse } from 'src/common/dtos/response.dto';
 import { transformToDto } from 'src/utils/transform-to-dto';
 import { UserDto } from 'src/users/dtos/user.dto';
 import { ResumeUploadResponseDto } from './dtos/resume-upload-response.dto';
+import { Role } from 'src/common/role.enum';
+import { Response } from 'express';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -159,5 +164,32 @@ export class ProfilesController {
       'Resume updated successfully',
       transformToDto(ResumeUploadResponseDto, { resumeUrl }),
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/resumes/:filename')
+  async getResume(
+    @Param('filename') filename: string,
+    @CurrentUser() user: User,
+    @Res() response: Response,
+  ) {
+    const resumePath = path.join(process.cwd(), 'uploads', 'resumes', filename);
+
+    if (!fs.existsSync(resumePath))
+      throw new NotFoundException('Resume not found');
+
+    if (user.role === Role.ADMIN) return response.sendFile(resumePath);
+
+    if (!user.resume_url)
+      throw new ForbiddenException('You have not uploaded a resume');
+
+    // Allow user to view their own resume only
+    const isOwnResume = filename === path.basename(user.resume_url);
+
+    if (!isOwnResume) {
+      throw new ForbiddenException('You can only access your own resume');
+    }
+
+    return response.sendFile(resumePath);
   }
 }
