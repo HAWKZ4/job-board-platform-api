@@ -25,6 +25,10 @@ import { DeleteOwnProfileDto } from './dtos/delete-own-profile.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { resumeUploadOptions } from 'src/config/resume-upload.config';
+import { SuccessResponse } from 'src/common/dtos/response.dto';
+import { transformToDto } from 'src/utils/transform-to-dto';
+import { UserDto } from 'src/users/dtos/user.dto';
+import { ResumeUploadResponseDto } from './dtos/resume-upload-response.dto';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -47,9 +51,14 @@ export class ProfilesController {
     @CurrentUser() user: User,
     @Body() updateProfileDto: UpdateProfileDto,
   ) {
-    return this.profilesService.updateProfile(
+    const updatedUser = await this.profilesService.updateProfile(
       user.id.toString(),
       updateProfileDto,
+    );
+
+    return new SuccessResponse(
+      'User updated successfully',
+      transformToDto(UserDto, updatedUser),
     );
   }
 
@@ -61,6 +70,7 @@ export class ProfilesController {
   ) {
     return this.profilesService.deleteOwnProfile(user.id, deleteOwnProfileDto);
   }
+
   @UseGuards(JwtAuthGuard)
   @Patch('/change-password')
   async changePassword(
@@ -97,10 +107,10 @@ export class ProfilesController {
     try {
       const resumeUrl = `/uploads/resumes/${file.filename}`;
       await this.profilesService.updateResume(user.id, resumeUrl);
-      return {
-        message: 'Resume uploaded successfully',
-        resumeUrl,
-      };
+      return new SuccessResponse(
+        'Resume uploaded successfully',
+        transformToDto(ResumeUploadResponseDto, { resumeUrl }),
+      );
     } catch (err) {
       console.error('Upload error', err);
       throw new InternalServerErrorException(
@@ -145,9 +155,9 @@ export class ProfilesController {
       });
     }
 
-    return {
-      message: 'Resume updated successfully',
-      resumeUrl,
-    };
+    return new SuccessResponse(
+      'Resume updated successfully',
+      transformToDto(ResumeUploadResponseDto, { resumeUrl }),
+    );
   }
 }
