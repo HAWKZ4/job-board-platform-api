@@ -18,7 +18,7 @@ export class AuthService {
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
-    return this.usersService.createUser({
+    await this.usersService.createUser({
       ...registerUserDto,
       role: Role.USER,
     });
