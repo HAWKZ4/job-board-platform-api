@@ -7,7 +7,6 @@ import {
 } from 'typeorm';
 
 import { Role } from 'src/common/role.enum';
-import { SafeUserDto } from '../dtos/safe-user.dto';
 
 @Entity('users')
 export class User {
@@ -34,19 +33,11 @@ export class User {
   role: Role;
 
   @Column({ nullable: true })
-  resume_url: string;
+  resume_url?: string;
 
   @CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()
   updated_at: Date;
-
-  toSafeUser(): SafeUserDto {
-    return {
-      id: this.id,
-      email: this.email,
-      role: this.role,
-    };
-  }
 }

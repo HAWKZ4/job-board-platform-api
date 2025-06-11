@@ -2,14 +2,13 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { AdminUpdateUserDto } from './dtos/admin-update-user.dto';
 import { hash } from 'bcryptjs';
 import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
 
@@ -25,11 +24,11 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<User[]> {
     return this.userRepo.find();
   }
 
-  async getUser(query: { id?: number; email?: string }) {
+  async getUser(query: { id?: number; email?: string }): Promise<User> {
     if (!query.id && !query.email) {
       throw new BadRequestException('Must provide either id or email');
     }
@@ -38,7 +37,7 @@ export class UsersService {
     return user;
   }
 
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userRepo.findOne({
       where: { email: createUserDto.email },
     });
@@ -55,35 +54,36 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto) {
+  async adminUpdateUser(
+    id: number,
+    adminupdateUserDto: AdminUpdateUserDto,
+  ): Promise<User> {
     const user = await this.findUserOrThrow(id);
 
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const exisitngUser = await this.userRepo.findOne({
-        where: { email: updateUserDto.email },
-      });
-
-      if (exisitngUser && exisitngUser.id !== user.id) {
-        throw new ConflictException('Email already in use');
-      }
+    if (adminupdateUserDto.email && adminupdateUserDto.email !== user.email) {
+      await this.validateEmail(adminupdateUserDto.email, id);
     }
-
-    Object.assign(user, updateUserDto);
+    Object.assign(user, adminupdateUserDto);
     return this.userRepo.save(user);
   }
+  // TODO:
+  // async updateOwnProfile( 
+  //   id: number,
+  //   updateUserDto: UpdateUserDto,
+  // ): Promise<User> {
+  //   const user = await this.findUserOrThrow(id);
 
-  async deleteUser(user: User) {
-    try {
-      await this.userRepo.remove(user);
-      return { message: 'Deleted successfully' };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to delete user');
-    }
-  }
+  //   if (updateUserDto.email && updateUserDto.email !== user.email) {
+  //     await this.validateEmail(updateUserDto.email, id);
+  //   }
 
-  async viewProfile(id: number) {
+  //   Object.assign(user, updateUserDto);
+  //   return this.userRepo.save(user);
+  // }
+
+  async deleteUser(id: number): Promise<void> {
     const user = await this.findUserOrThrow(id);
-    return user;
+    await this.userRepo.remove(user);
   }
 
   async updateRefreshToken(userId: number, refreshToken: string) {
@@ -96,5 +96,16 @@ export class UsersService {
     const hashedPassword = await hash(dto.newPassword, 10);
     user.password = hashedPassword;
     await this.userRepo.save(user);
+  }
+
+  private async validateEmail(
+    email: string,
+    currentUserId?: number,
+  ): Promise<void> {
+    const existingUser = await this.userRepo.findOne({ where: { email } });
+
+    if (existingUser && existingUser.id !== currentUserId) {
+      throw new ConflictException('Email already in use');
+    }
   }
 }

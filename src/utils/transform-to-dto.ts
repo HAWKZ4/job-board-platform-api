@@ -1,8 +1,10 @@
 // Responsible for the transformation of the response (message + data)
-import { plainToInstance } from 'class-transformer';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
 
-export function transformToDto<T>(dtoClass: new () => T, data: any): T {
+export function transformToDto<T>(dtoClass: ClassConstructor<T>, data: any): T {
   return plainToInstance(dtoClass, data, {
-    excludeExtraneousValues: true
-  })
+    excludeExtraneousValues: true,
+    enableImplicitConversion: true, // Auto-convert string to number/etc
+    strategy: 'excludeAll', // Opt-in exposure (safer than @Expose everywhere)
+  });
 }
