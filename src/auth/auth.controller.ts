@@ -14,57 +14,49 @@ import { AuthService } from './auth.service';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { ConfigService } from '@nestjs/config';
+import { NoDataResponse } from 'src/common/dtos/no-data-response.dto';
+import { SuccessResponse } from 'src/common/dtos/response.dto';
+import { UserDto } from 'src/users/dtos/user.dto';
+import { transformToDto } from 'src/utils/transform-to-dto';
+import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @HttpCode(200)
   @Post('logout')
   @UseGuards(JwtAuthGuard)
-  async logout(@Res({ passthrough: true }) response: Response) {
-    const inProduction =
-      this.configService.getOrThrow('NODE_ENV') === 'production';
+  async logout(
+    @Res({ passthrough: true }) response: Response,
+    @CurrentUser() user: SafeUserDto
+  ): Promise<NoDataResponse> {
+    await this.authService.logout(response, user.id);
 
-    response.clearCookie('Authentication', {
-      httpOnly: true,
-      secure: inProduction,
-      sameSite: 'strict',
-    });
-
-    response.clearCookie('Refresh', {
-      httpOnly: true,
-      secure: inProduction,
-      sameSite: 'strict',
-    });
-
-    response.json({ message: 'Logged out successfully' });
+    return new NoDataResponse('Logged out successfully');
   }
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
-    @CurrentUser() user: User,
+    @CurrentUser() user: SafeUserDto,
     @Res({ passthrough: true }) response: Response,
-  ) {
-    await this.authService.login(user, response);
-    response.json({
-      message: 'Logged in successfully',
-      data: user.toSafeUser(),
-    });
+  ): Promise<SuccessResponse<UserDto>> {
+    const fullUser = await this.authService.login(user, response);
+
+    return new SuccessResponse(
+      'Logged in successfully',
+      transformToDto(UserDto, fullUser),
+    );
   }
 
   @Post('register')
-  async register(@Body() registerUserDto: RegisterUserDto) {
+  async register(
+    @Body() registerUserDto: RegisterUserDto,
+  ): Promise<NoDataResponse> {
     await this.authService.register(registerUserDto);
-    return {
-      message: 'Account created successfully',
-    };
+    return new NoDataResponse('Account created successfully');
   }
 
   @HttpCode(200)
@@ -73,10 +65,8 @@ export class AuthController {
   async refreshToken(
     @CurrentUser() user: User,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<NoDataResponse> {
     await this.authService.login(user, response);
-    return {
-      message: 'Token refreshed successfully',
-    };
+    return new NoDataResponse('Token refreshed successfully');
   }
 }

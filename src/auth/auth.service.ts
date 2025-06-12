@@ -8,106 +8,121 @@ import { UsersService } from 'src/users/users.service';
 import { TokenPayload } from './token-payload.interface';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { Role } from 'src/common/role.enum';
+import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly inProduction: boolean;
+
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    this.inProduction =
+      this.configService.getOrThrow('NODE_ENV') === 'production';
+  }
 
-  async register(registerUserDto: RegisterUserDto) {
+  async register(registerUserDto: RegisterUserDto): Promise<void> {
     await this.usersService.createUser({
       ...registerUserDto,
       role: Role.USER,
     });
   }
 
-  async login(user: User, response: Response) {
-    // To make cookie expires with accessToken at the same time
-    const accessTokenExpiresAt = new Date();
+  async login(user: SafeUserDto, response: Response): Promise<User> {
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+    const hashedRefreshToken = await hash(refreshToken, 10);
+    await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
+    await this.setCookies(response, accessToken, refreshToken);
+    return this.usersService.getUser({ id: user.id });
+  }
 
-    accessTokenExpiresAt.setMilliseconds(
-      accessTokenExpiresAt.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
-          ),
-        ),
-    );
+  async logout(response: Response, userId: number): Promise<void> {
+    await this.usersService.clearRefreshToken(userId);
+    this.clearAuthCookie(response);
+  }
 
-    const refreshTokenExpiresAt = new Date();
-
-    refreshTokenExpiresAt.setMilliseconds(
-      refreshTokenExpiresAt.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_REFRESH_TOKEN_EXPIRATION_MS',
-          ),
-        ),
-    );
-
-    const tokenPayload: TokenPayload = {
-      userId: user.id.toString(),
+  private async setCookies(
+    response: Response,
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<void> {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: this.inProduction,
+      sameSite: 'strict' as const,
     };
 
-    const accessToken = this.jwtService.sign(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_ACCESS_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION_MS')}ms`,
-    });
-
-    const refreshToken = this.jwtService.sign(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION_MS')}ms`,
-    });
-
-    const hashedRefreshToken = await hash(refreshToken, 10);
-
-    await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
-
     response.cookie('Authentication', accessToken, {
-      httpOnly: true,
-      secure: this.configService.getOrThrow('NODE_ENV') === 'production',
-      expires: accessTokenExpiresAt,
+      ...cookieOptions,
+      maxAge: parseInt(
+        this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION_MS'),
+      ),
     });
 
     response.cookie('Refresh', refreshToken, {
-      httpOnly: true,
-      secure: this.configService.getOrThrow('NODE_ENV') === 'production',
-      expires: refreshTokenExpiresAt,
+      ...cookieOptions,
+      maxAge: parseInt(
+        this.configService.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION_MS'),
+      ),
     });
   }
 
-  async verifyUser(email: string, password: string) {
-    try {
-      const user = await this.usersService.getUser({ email });
+  private async generateTokens(
+    user: SafeUserDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const payload: TokenPayload = { userId: user.id.toString() };
 
-      if (!user) {
-        throw new UnauthorizedException('Credentials are not valid');
-      }
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
+        expiresIn: this.configService.getOrThrow(
+          'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+        ),
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn: this.configService.getOrThrow(
+          'JWT_REFRESH_TOKEN_EXPIRATION_MS',
+        ),
+      }),
+    ]);
+    return { accessToken, refreshToken };
+  }
 
-      const authenticated = await compare(password, user.password);
-      if (!authenticated) {
-        throw new UnauthorizedException('Credentials are not valid');
-      }
+  async verifyUser(email: string, password: string): Promise<SafeUserDto> {
+    const user = await this.usersService.getUser({ email });
+    if (!user) throw new UnauthorizedException('Credentials are not valid');
 
-      return user;
-    } catch (err) {
-      throw new UnauthorizedException('Credentials are not valid');
-    }
+    const passwordValid = await compare(password, user.password);
+    if (!passwordValid) throw new UnauthorizedException('Invalid credentials');
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
   }
 
   async verifyUserRefreshToken(refreshToken: string, userId: number) {
-    try {
-      const user = await this.usersService.getUser({ id: userId });
-      if (!user.refreshToken) throw new UnauthorizedException();
-      const authenticated = await compare(refreshToken, user?.refreshToken);
+    const user = await this.usersService.getUser({ id: userId });
+    if (!user?.refreshToken) throw new UnauthorizedException();
 
-      if (!authenticated) throw new UnauthorizedException();
-      return user;
-    } catch (err) {
-      throw new UnauthorizedException();
-    }
+    const validToken = await compare(refreshToken, user?.refreshToken);
+    if (!validToken) throw new UnauthorizedException();
+
+    return user;
+  }
+
+  private clearAuthCookie(response: Response): void {
+    const cookieOption = {
+      httpOnly: true,
+      secure: this.inProduction,
+      sameSite: 'strict' as const,
+    };
+
+    response.clearCookie('Authentication', cookieOption);
+    response.clearCookie('Refresh', cookieOption);
   }
 }

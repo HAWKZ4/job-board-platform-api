@@ -23,7 +23,7 @@ export class User {
   password: string;
 
   @Column({ type: 'text', nullable: true })
-  refreshToken?: string;
+  refreshToken?: string | null;
 
   @Column({
     type: 'enum',

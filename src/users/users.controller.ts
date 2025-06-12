@@ -33,7 +33,7 @@ export class UsersController {
   @Serialize(UserDto)
   @Roles(Role.ADMIN, Role.USER)
   @UseGuards(JwtAuthGuard)
-  @Get('me')
+  @Get('/me')
   async getMe(@CurrentUser() user: User) {
     return this.usersService.getUser({ id: user.id });
   }

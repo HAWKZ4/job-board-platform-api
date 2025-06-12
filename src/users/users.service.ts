@@ -67,7 +67,7 @@ export class UsersService {
     return this.userRepo.save(user);
   }
   // TODO:
-  // async updateOwnProfile( 
+  // async updateOwnProfile(
   //   id: number,
   //   updateUserDto: UpdateUserDto,
   // ): Promise<User> {
@@ -107,5 +107,9 @@ export class UsersService {
     if (existingUser && existingUser.id !== currentUserId) {
       throw new ConflictException('Email already in use');
     }
+  }
+
+  async clearRefreshToken(userId: number): Promise<void> {
+    await this.userRepo.update(userId, { refreshToken: null });
   }
 }
