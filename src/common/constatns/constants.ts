@@ -1,0 +1,1 @@
+export const VALID_FILENAME_REGEX = /^[a-zA-Z0-9-_.]+\.pdf$/i;

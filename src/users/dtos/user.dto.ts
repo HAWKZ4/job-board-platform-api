@@ -1,27 +1,31 @@
-import { Expose, Transform } from 'class-transformer';
-import { Role } from 'src/common/role.enum';
+import { Expose } from 'class-transformer';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 export class UserDto {
   @Expose()
   id: number;
 
   @Expose()
-  name: string;
+  firstName: string;
+
+  @Expose()
+  lastName: string;
+
+  @Expose()
+  location: string;
 
   @Expose()
   email: string;
 
   @Expose()
-  role: Role; // Use the enum type, not string
+  role: UserRole; // Use the enum type, not string
 
-  @Expose({ groups: ['admin'] }) // Only expose to admins
-  resume_url?: string;
-
-  @Expose()
-  @Transform(({ value }) => value.toISOString())
-  created_at: Date;
+  @Expose() // Only expose to admins
+  resumeUrl?: string | null;
 
   @Expose()
-  @Transform(({ value }) => value.toISOString())
-  updated_at: Date;
+  createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
 }

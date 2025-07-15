@@ -1,12 +1,14 @@
 import {
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
-export class UpdateProfileDto {
+export class UpdateUserDto {
   @IsOptional()
   @IsString()
   @MinLength(3)
@@ -28,4 +30,12 @@ export class UpdateProfileDto {
   @MinLength(3)
   @MaxLength(50)
   location?: string;
+
+  @IsOptional()
+  @IsString()
+  resumeUrl?: string;
+
+  @IsOptional() // Optional so it defaults to 'user' if not provided
+  @IsEnum(UserRole)
+  role?: UserRole;
 }

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { TokenPayload } from '../token-payload.interface';
+import { TokenPayload } from '../interfaces/token-payload.interface';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -20,13 +20,15 @@ export class JwtRefreshStrategy extends PassportStrategy(
         (request: Request) => request.cookies?.Refresh,
       ]),
       secretOrKey: configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
+      
+      // Pass the entire request object to the validate method (needed for cookies access)
       passReqToCallback: true,
     });
   }
   async validate(request: Request, payload: TokenPayload) {
     return this.authService.verifyUserRefreshToken(
       request.cookies?.Refresh,
-      parseInt(payload.userId),
+      +payload.userId,
     );
   }
 }

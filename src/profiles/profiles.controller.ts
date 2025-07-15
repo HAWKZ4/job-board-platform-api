@@ -3,10 +3,9 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
+  HttpCode,
   InternalServerErrorException,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -15,65 +14,52 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import * as path from 'path';
 import * as fs from 'fs';
 import { ProfilesService } from './profiles.service';
-import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { ProfileDto } from './dtos/profile.dto';
-import { CurrentUser } from 'src/auth/current-user.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { DeleteOwnProfileDto } from './dtos/delete-own-profile.dto';
+import { DeleteProfileDto } from './dtos/delete-profile.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { resumeUploadOptions } from 'src/config/resume-upload.config';
-import { SuccessResponse } from 'src/common/dtos/response.dto';
-import { transformToDto } from 'src/utils/transform-to-dto';
-import { UserDto } from 'src/users/dtos/user.dto';
-import { ResumeUploadResponseDto } from './dtos/resume-upload-response.dto';
-import { Role } from 'src/common/role.enum';
 import { Response } from 'express';
+import { SafeUser } from 'src/common/interfaces/safe-user.interface';
+import { PublicProfile } from './types/profile.types';
+import { AuthService } from 'src/auth/auth.service';
+import { diskStorage } from 'multer';
+import { RESUME_UPLOADS_DIR } from '../common/constatns/file-paths';
+import { fileNameEditor, pdfFileFilter } from '../common/utils/file.utils';
 
 @Controller('profiles')
 export class ProfilesController {
-  constructor(private readonly profilesService: ProfilesService) {}
+  constructor(
+    private readonly profilesService: ProfilesService,
+    private readonly authService: AuthService,
+  ) {}
 
-  @Serialize(ProfileDto)
-  @Get()
-  async getAllProfiles() {
-    return this.profilesService.getAllProfiles();
-  }
-  @Serialize(ProfileDto)
-  @Get('/:id')
-  async getProfile(@Param('id') id: string) {
-    return this.profilesService.getUserProfile(id);
-  }
   @Serialize(ProfileDto)
   @UseGuards(JwtAuthGuard)
   @Patch()
   async updateProfile(
-    @CurrentUser() user: User,
+    @CurrentUser() user: SafeUser,
     @Body() updateProfileDto: UpdateProfileDto,
-  ) {
-    const updatedUser = await this.profilesService.updateProfile(
-      user.id.toString(),
-      updateProfileDto,
-    );
-
-    return new SuccessResponse(
-      'User updated successfully',
-      transformToDto(UserDto, updatedUser),
-    );
+  ): Promise<PublicProfile> {
+    return this.profilesService.update(user.id, updateProfileDto);
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
   @Delete()
-  async deleteOwnProfile(
+  async deleteProfile(
     @CurrentUser() user: User,
-    @Body() deleteOwnProfileDto: DeleteOwnProfileDto,
-  ) {
-    return this.profilesService.deleteOwnProfile(user.id, deleteOwnProfileDto);
+    @Body() deleteProfileDto: DeleteProfileDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    await this.profilesService.delete(user.id, deleteProfileDto);
+    await this.authService.logout(response, user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -81,115 +67,58 @@ export class ProfilesController {
   async changePassword(
     @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
-  ) {
+  ): Promise<void> {
     return this.profilesService.changePassword(user.id, changePasswordDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('/upload-resume')
-  @UseInterceptors(FileInterceptor('file', resumeUploadOptions))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        filename: fileNameEditor,
+        destination: RESUME_UPLOADS_DIR,
+      }),
+      limits: {
+        // Byte => KB => etc...
+        fileSize: 1000 * 1000 * 5, // 5MB
+      },
+      fileFilter: pdfFileFilter,
+    }),
+  )
   async uploadResume(
-    @CurrentUser() user: User,
     @UploadedFile() file: Express.Multer.File,
-  ) {
-    if (!file) throw new BadRequestException('Resume file is required');
+    @CurrentUser() user: SafeUser,
+  ): Promise<void> {
+    if (!file) throw new BadRequestException('No file uploaded');
 
-    const existingUser = await this.profilesService.getUserProfile(
-      user.id.toString(),
-    );
-    if (existingUser.resume_url !== null) {
-      // Clean up the file that was just uploaded
-      const uploadedPath = path.join(process.cwd(), file.path);
-      fs.unlink(uploadedPath, (err) => {
-        if (err) console.warn('Falied to delete unwanted resume:', err.message);
-      });
-
-      throw new BadRequestException(
-        'Resume already uploaded. Use /update-resume',
-      );
-    }
-
-    try {
-      const resumeUrl = `/uploads/resumes/${file.filename}`;
-      await this.profilesService.updateResume(user.id, resumeUrl);
-      return new SuccessResponse(
-        'Resume uploaded successfully',
-        transformToDto(ResumeUploadResponseDto, { resumeUrl }),
-      );
-    } catch (err) {
-      console.error('Upload error', err);
-      throw new InternalServerErrorException(
-        'Something went wrong while uploading the resume',
-      );
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch('/update-resume')
-  @UseInterceptors(FileInterceptor('file', resumeUploadOptions))
-  async updateResume(
-    @CurrentUser() user: User,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    if (!file) throw new BadRequestException('Resume file is required');
-
-    const userId = user.id;
-    const existingUser = await this.profilesService.getUserProfile(
-      userId.toString(),
-    );
-
-    if (!existingUser.resume_url) {
-      // Clean up the file that was just uploaded
-      const uploadedPath = path.join(process.cwd(), file.path);
-      fs.unlink(uploadedPath, (err) => {
-        if (err) console.warn('Falied to delete unwanted resume:', err.message);
-      });
-
-      throw new BadRequestException("There's no resume to be updated");
-    }
-
-    const oldResume = existingUser.resume_url;
-
-    const resumeUrl = `/uploads/resumes/${file.filename}`;
-    await this.profilesService.updateResume(existingUser.id, resumeUrl);
-
-    if (oldResume) {
-      const fullPath = path.join(process.cwd(), oldResume);
-      fs.unlink(fullPath, (err) => {
-        if (err) console.warn('Old resume deletion failed', err.message);
-      });
-    }
-
-    return new SuccessResponse(
-      'Resume updated successfully',
-      transformToDto(ResumeUploadResponseDto, { resumeUrl }),
-    );
+    const relativeResumePath = `/uploads/resumes/${file.filename}`;
+    await this.profilesService.updateUserResumeUrl(user.id, relativeResumePath);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/resumes/:filename')
-  async getResume(
+  async serveResume(
     @Param('filename') filename: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: SafeUser,
     @Res() response: Response,
-  ) {
-    const resumePath = path.join(process.cwd(), 'uploads', 'resumes', filename);
+  ): Promise<void> {
+    const filePath = await this.profilesService.verifyUserResumeAccess(
+      user,
+      filename,
+    );
 
-    if (!fs.existsSync(resumePath))
-      throw new NotFoundException('Resume not found');
+    response.setHeader('Content-Type', 'application/pdf');
+    response.setHeader('Content-Disposition', `inline; filename="${filename}"`);
 
-    if (user.role === Role.ADMIN) return response.sendFile(resumePath);
-
-    if (!user.resume_url)
-      throw new ForbiddenException('You have not uploaded a resume');
-
-    // Allow user to view their own resume only
-    const isOwnResume = filename === path.basename(user.resume_url);
-
-    if (!isOwnResume) {
-      throw new ForbiddenException('You can only access your own resume');
-    }
-
-    return response.sendFile(resumePath);
+    return new Promise<void>((resolve, reject) => {
+      response.sendFile(filePath, (err) => {
+        if (err) {
+          reject(new InternalServerErrorException('File delivery failed'));
+        } else {
+          resolve(); // Success
+        }
+      });
+    });
   }
 }

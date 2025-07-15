@@ -3,12 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { Response } from 'express';
-import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { TokenPayload } from './token-payload.interface';
+import { TokenPayload } from './interfaces/token-payload.interface';
 import { RegisterUserDto } from './dtos/register-user.dto';
-import { Role } from 'src/common/role.enum';
-import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 
 @Injectable()
 export class AuthService {
@@ -23,24 +22,62 @@ export class AuthService {
       this.configService.getOrThrow('NODE_ENV') === 'production';
   }
 
-  async register(registerUserDto: RegisterUserDto): Promise<void> {
-    await this.usersService.createUser({
+  async register(registerUserDto: RegisterUserDto): Promise<SafeUser> {
+    return await this.usersService.create({
       ...registerUserDto,
-      role: Role.USER,
+      role: UserRole.USER,
     });
   }
 
-  async login(user: SafeUserDto, response: Response): Promise<User> {
+  async login(user: SafeUser, response: Response): Promise<void> {
     const { accessToken, refreshToken } = await this.generateTokens(user);
     const hashedRefreshToken = await hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
     await this.setCookies(response, accessToken, refreshToken);
-    return this.usersService.getUser({ id: user.id });
   }
 
   async logout(response: Response, userId: number): Promise<void> {
     await this.usersService.clearRefreshToken(userId);
     this.clearAuthCookie(response);
+  }
+
+  async verifyUser(email: string, password: string): Promise<SafeUser> {
+    const user = await this.usersService.findOneForCredentials(
+      { email },
+      { password: true },
+    );
+
+    if (!user) throw new UnauthorizedException();
+
+    const passwordValid = await compare(password, user.password);
+
+    if (!passwordValid) throw new UnauthorizedException('Invalid credentials');
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+  }
+
+  async verifyUserRefreshToken(
+    refreshToken: string,
+    userId: number,
+  ): Promise<SafeUser> {
+    const user = await this.usersService.findOneForCredentials(
+      { id: userId },
+      { refreshToken: true },
+    );
+    if (!user?.refreshToken) throw new UnauthorizedException();
+
+    const validToken = await compare(refreshToken, user?.refreshToken);
+    if (!validToken) throw new UnauthorizedException();
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
   }
 
   private async setCookies(
@@ -70,7 +107,7 @@ export class AuthService {
   }
 
   private async generateTokens(
-    user: SafeUserDto,
+    user: SafeUser,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload: TokenPayload = { userId: user.id.toString() };
 
@@ -89,30 +126,6 @@ export class AuthService {
       }),
     ]);
     return { accessToken, refreshToken };
-  }
-
-  async verifyUser(email: string, password: string): Promise<SafeUserDto> {
-    const user = await this.usersService.getUser({ email });
-    if (!user) throw new UnauthorizedException('Credentials are not valid');
-
-    const passwordValid = await compare(password, user.password);
-    if (!passwordValid) throw new UnauthorizedException('Invalid credentials');
-
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
-  }
-
-  async verifyUserRefreshToken(refreshToken: string, userId: number) {
-    const user = await this.usersService.getUser({ id: userId });
-    if (!user?.refreshToken) throw new UnauthorizedException();
-
-    const validToken = await compare(refreshToken, user?.refreshToken);
-    if (!validToken) throw new UnauthorizedException();
-
-    return user;
   }
 
   private clearAuthCookie(response: Response): void {
