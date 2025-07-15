@@ -2,17 +2,26 @@ import { Expose } from 'class-transformer';
 
 export class ProfileDto {
   @Expose()
-  id: string;
+  id: number;
 
   @Expose()
-  name: string;
+  firstName: string;
+
+  @Expose()
+  lastName: string;
+
+  @Expose()
+  location: string;
 
   @Expose()
   email: string;
 
   @Expose()
-  created_at: Date;
+  resumeUrl: string | null;
 
   @Expose()
-  updated_at: Date;
+  createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
 }

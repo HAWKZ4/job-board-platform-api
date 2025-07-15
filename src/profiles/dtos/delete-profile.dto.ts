@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export class DeleteOwnProfileDto {
+export class DeleteProfileDto {
   @IsString()
   password: string;
 }

@@ -6,15 +6,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Role } from 'src/common/role.enum';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  name: string;
 
   @Column({ unique: true })
   email: string;
@@ -22,22 +19,31 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'text', nullable: true })
-  refreshToken?: string | null;
+  @Column({ name: 'first_name' })
+  firstName: string;
+
+  @Column({ name: 'last_name' })
+  lastName: string;
+
+  @Column()
+  location: string;
+
+  @Column({ name: 'refresh_token', type: 'text', nullable: true })
+  refreshToken: string | null = null;
 
   @Column({
     type: 'enum',
-    enum: Role,
-    default: Role.USER,
+    enum: UserRole,
+    default: UserRole.USER,
   })
-  role: Role;
+  role: UserRole;
 
-  @Column({ nullable: true })
-  resume_url?: string;
+  @Column({ name: 'resume_url', type: 'varchar', length: 255, nullable: true })
+  resumeUrl: string | null = null;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
