@@ -12,6 +12,7 @@ export class JobsService {
     @InjectRepository(Job) private readonly jobRepo: Repository<Job>,
   ) {}
 
+  // User-Methods
   async findAll(paginationDto: PaginationDto): Promise<PaginatedResult<Job>> {
     const page = paginationDto.page ?? 1;
     const limit = paginationDto.limit ?? 1;
@@ -32,16 +33,27 @@ export class JobsService {
     };
   }
 
-  async create(createJobDto: CreateJobDto): Promise<Job> {
-    const newJob = this.jobRepo.create({ ...createJobDto });
-    return await this.jobRepo.save(newJob);
-  }
-
   async findJobByIdForUser(id: number): Promise<Job> {
     const job = await this.jobRepo.findOne({
       where: { id, isPublished: true, deletedAt: IsNull() },
     });
     if (!job) throw new NotFoundException('Job not found');
     return job;
+  }
+
+  // Admin-Methods
+  async findOneByIdForAdmin(id: number): Promise<Job> {
+    const job = await this.jobRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!job) throw new NotFoundException('Job not found');
+    return job;
+  }
+
+  async create(createJobDto: CreateJobDto): Promise<Job> {
+    const newJob = this.jobRepo.create({ ...createJobDto });
+    return await this.jobRepo.save(newJob);
   }
 }
