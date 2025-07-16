@@ -4,6 +4,7 @@ import { Job } from './entites/job.entity';
 import { Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
+import { CreateJobDto } from './dtos/create-job.dto';
 
 @Injectable()
 export class JobsService {
@@ -29,5 +30,10 @@ export class JobsService {
         limit,
       },
     };
+  }
+
+  async create(createJobDto: CreateJobDto): Promise<Job> {
+    const newJob = this.jobRepo.create({ ...createJobDto });
+    return await this.jobRepo.save(newJob);
   }
 }
