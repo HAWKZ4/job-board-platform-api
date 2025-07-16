@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -36,6 +37,8 @@ import { TransformResponseInterceptor } from './common/interceptors/transform-re
     AuthModule,
 
     ProfilesModule,
+
+    JobsModule,
   ],
   controllers: [AppController],
   providers: [
