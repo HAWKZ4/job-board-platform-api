@@ -3,6 +3,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   DeleteDateColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { JobType } from '../enums/job-type.enum';
 
@@ -44,10 +46,10 @@ export class Job {
   @Column({ default: true })
   isPublished: boolean;
 
-  @Column({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
