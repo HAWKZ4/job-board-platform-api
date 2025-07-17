@@ -13,7 +13,7 @@ export class JobsService {
   ) {}
 
   // User-Methods
-  async findAllByUsers(
+  async findAllByUser(
     paginationDto: PaginationDto,
   ): Promise<PaginatedResult<Job>> {
     const page = paginationDto.page ?? 1;
@@ -45,6 +45,32 @@ export class JobsService {
   }
 
   // Admin-Methods
+  async findAllByAdmin(
+    paginationDto: PaginationDto,
+    includeDeleted: boolean,
+  ): Promise<PaginatedResult<Job>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const query = this.jobRepo.createQueryBuilder('job');
+
+    if (includeDeleted) query.withDeleted();
+
+    query
+      .orderBy('job.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [jobs, total] = await query.getManyAndCount();
+
+    return {
+      data: jobs,
+      meta: {
+        total,
+        page,
+        limit,
+      },
+    };
+  }
+
   async findOneByIdForAdmin(id: number): Promise<Job> {
     const job = await this.jobRepo.findOne({
       where: { id },

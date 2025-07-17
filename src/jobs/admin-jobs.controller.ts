@@ -24,8 +24,10 @@ export class AdminJobsController {
   @Get()
   async getAllJobs(
     @Query() pagiantionDto: PaginationDto,
+    @Query('showDeleted') showDeleted?: 'true' | 'false',
   ): Promise<PaginatedResult<AdminJobDto>> {
-    return this.jobsService.findAllByUsers(pagiantionDto);
+    const includeDeleted = showDeleted === 'true';
+    return this.jobsService.findAllByAdmin(pagiantionDto, includeDeleted);
   }
 
   @Serialize(AdminJobDto)
