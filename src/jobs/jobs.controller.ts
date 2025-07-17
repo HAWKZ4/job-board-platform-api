@@ -18,11 +18,12 @@ import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
+  @Serialize(PublicJobDto)
   @Get()
   async getAllJobs(
     @Query() pagiantionDto: PaginationDto,
-  ): Promise<PaginatedResult<Job>> {
-    return this.jobsService.findAll(pagiantionDto);
+  ): Promise<PaginatedResult<PublicJobDto>> {
+    return this.jobsService.findAllByUsers(pagiantionDto);
   }
 
   @Serialize(PublicJobDto)

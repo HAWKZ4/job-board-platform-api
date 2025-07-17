@@ -13,11 +13,14 @@ export class JobsService {
   ) {}
 
   // User-Methods
-  async findAll(paginationDto: PaginationDto): Promise<PaginatedResult<Job>> {
+  async findAllByUsers(
+    paginationDto: PaginationDto,
+  ): Promise<PaginatedResult<Job>> {
     const page = paginationDto.page ?? 1;
     const limit = paginationDto.limit ?? 1;
 
     const [jobs, total] = await this.jobRepo.findAndCount({
+      where: { deletedAt: IsNull(), isPublished: true },
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
