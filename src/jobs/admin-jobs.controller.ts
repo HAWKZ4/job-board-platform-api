@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -10,7 +12,6 @@ import {
 import { JobsService } from './jobs.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
-import { Job } from './entites/job.entity';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminJobDto } from './dtos/admin-job.dto';
@@ -39,5 +40,15 @@ export class AdminJobsController {
   @Post()
   async createJob(@Body() createJobDto: CreateJobDto): Promise<AdminJobDto> {
     return this.jobsService.create(createJobDto);
+  }
+
+  @HttpCode(204)
+  @Delete('/:id')
+  async deleteJob(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('force') force?: 'true' | 'false',
+  ): Promise<void> {
+    const isForceDelete = force === 'true';
+    return this.jobsService.delete(id, isForceDelete);
   }
 }

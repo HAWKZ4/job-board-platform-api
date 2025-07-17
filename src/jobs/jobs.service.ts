@@ -56,4 +56,15 @@ export class JobsService {
     const newJob = this.jobRepo.create({ ...createJobDto });
     return await this.jobRepo.save(newJob);
   }
+
+  async delete(id: number, force: boolean = false): Promise<void> {
+    const job = await this.jobRepo.findOne({ where: { id } });
+    if (!job) throw new NotFoundException('Job not found');
+
+    if (force) {
+      await this.jobRepo.remove(job);
+    } else {
+      await this.jobRepo.softDelete(id);
+    }
+  }
 }
