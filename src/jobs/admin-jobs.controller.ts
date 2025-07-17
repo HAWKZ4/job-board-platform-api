@@ -12,7 +12,6 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { Job } from './entites/job.entity';
 import { CreateJobDto } from './dtos/create-job.dto';
-import { PublicJobDto } from './dtos/public-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminJobDto } from './dtos/admin-job.dto';
 
