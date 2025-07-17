@@ -28,14 +28,11 @@ export class JobsController {
 
   @Serialize(PublicJobDto)
   @Get('/:id')
-  async getJobByIdForUser(
+  async getJobById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<PublicJobDto> {
     return this.jobsService.findJobByIdForUser(id);
   }
 
-  @Post()
-  async createJob(@Body() createJobDto: CreateJobDto): Promise<Job> {
-    return this.jobsService.create(createJobDto);
-  }
+ 
 }

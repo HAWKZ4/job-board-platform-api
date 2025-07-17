@@ -21,10 +21,23 @@ export class AdminJobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Serialize(AdminJobDto)
+  @Get()
+  async getAllJobs(
+    @Query() pagiantionDto: PaginationDto,
+  ): Promise<PaginatedResult<AdminJobDto>> {
+    return this.jobsService.findAll(pagiantionDto);
+  }
+
+  @Serialize(AdminJobDto)
   @Get('/:id')
-  async getJobByIdForAdmin(
+  async getJobById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<AdminJobDto> {
     return this.jobsService.findOneByIdForAdmin(id);
+  }
+
+  @Post()
+  async createJob(@Body() createJobDto: CreateJobDto): Promise<Job> {
+    return this.jobsService.create(createJobDto);
   }
 }
