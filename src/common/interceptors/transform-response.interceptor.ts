@@ -57,6 +57,9 @@ export class TransformResponseInterceptor<T>
     if (handlerName.startsWith('update'))
       return 'Resource updated successfully';
 
+    if (handlerName.startsWith('delete'))
+      return 'Resource deleted successfully';
+
     return 'Request successful';
   }
 }
