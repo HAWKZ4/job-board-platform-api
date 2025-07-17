@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
-import { Job } from './entites/job.entity';
 import { PublicJobDto } from './dtos/public-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 
@@ -23,7 +14,7 @@ export class JobsController {
   async getAllJobs(
     @Query() pagiantionDto: PaginationDto,
   ): Promise<PaginatedResult<PublicJobDto>> {
-    return this.jobsService.findAllByUsers(pagiantionDto);
+    return this.jobsService.findAllByUser(pagiantionDto);
   }
 
   @Serialize(PublicJobDto)
