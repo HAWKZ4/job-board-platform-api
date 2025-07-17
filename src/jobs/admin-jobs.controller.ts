@@ -35,8 +35,9 @@ export class AdminJobsController {
     return this.jobsService.findOneByIdForAdmin(id);
   }
 
+  @Serialize(AdminJobDto)
   @Post()
-  async createJob(@Body() createJobDto: CreateJobDto): Promise<Job> {
+  async createJob(@Body() createJobDto: CreateJobDto): Promise<AdminJobDto> {
     return this.jobsService.create(createJobDto);
   }
 }
