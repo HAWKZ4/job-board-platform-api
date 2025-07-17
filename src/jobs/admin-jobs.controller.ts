@@ -25,7 +25,7 @@ export class AdminJobsController {
   async getAllJobs(
     @Query() pagiantionDto: PaginationDto,
   ): Promise<PaginatedResult<AdminJobDto>> {
-    return this.jobsService.findAll(pagiantionDto);
+    return this.jobsService.findAllByUsers(pagiantionDto);
   }
 
   @Serialize(AdminJobDto)
