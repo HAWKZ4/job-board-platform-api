@@ -5,6 +5,7 @@ import { IsNull, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { CreateJobDto } from './dtos/create-job.dto';
+import { UpdateJobDto } from './dtos/update-jobs.dto';
 
 @Injectable()
 export class JobsService {
@@ -86,8 +87,25 @@ export class JobsService {
     return await this.jobRepo.save(newJob);
   }
 
+  async update(id: number, updateJobDto: UpdateJobDto): Promise<Job> {
+    const job = await this.jobRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!job) throw new NotFoundException('Job not found');
+
+    Object.assign(job, updateJobDto);
+    const savedJob = await this.jobRepo.save(job);
+
+    return savedJob;
+  }
+
   async delete(id: number, force: boolean = false): Promise<void> {
-    const job = await this.jobRepo.findOne({ where: { id } });
+    const job = await this.jobRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    });
     if (!job) throw new NotFoundException('Job not found');
 
     if (force) {

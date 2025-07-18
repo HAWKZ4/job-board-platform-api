@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { PaginatedResult } from 'src/common/interfaces/paginated-result.interfac
 import { CreateJobDto } from './dtos/create-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminJobDto } from './dtos/admin-job.dto';
+import { UpdateJobDto } from './dtos/update-jobs.dto';
 
 @Controller('admin/jobs')
 export class AdminJobsController {
@@ -42,6 +44,16 @@ export class AdminJobsController {
   @Post()
   async createJob(@Body() createJobDto: CreateJobDto): Promise<AdminJobDto> {
     return this.jobsService.create(createJobDto);
+  }
+
+  @Serialize(AdminJobDto)
+  @Patch('/:id')
+  async updateJob(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateJobDto: UpdateJobDto,
+  ): Promise<AdminJobDto> {
+    const updatedJob = await this.jobsService.update(id, updateJobDto);
+    return updatedJob;
   }
 
   @HttpCode(204)
