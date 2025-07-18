@@ -56,6 +56,11 @@ export class AdminJobsController {
     return updatedJob;
   }
 
+  @Patch('/restore/:id')
+  async restoreJob(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.jobsService.restore(id);
+  }
+
   @HttpCode(204)
   @Delete('/:id')
   async deleteJob(

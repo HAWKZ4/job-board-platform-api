@@ -101,6 +101,13 @@ export class JobsService {
     return savedJob;
   }
 
+  async restore(id: number): Promise<void> {
+    const result = await this.jobRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Job not found or already active');
+    }
+  }
+
   async delete(id: number, force: boolean = false): Promise<void> {
     const job = await this.jobRepo.findOne({
       where: { id },
