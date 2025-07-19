@@ -1,12 +1,11 @@
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { FindOneOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { hash } from 'bcryptjs';
@@ -14,43 +13,22 @@ import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { UpdateProfileDto } from 'src/profiles/dtos/update-profile.dto';
-import {
-  UserWithCredentials,
-  UserWithoutCredeitals,
-} from '../common/types/user.types';
-import { PublicProfile } from 'src/profiles/types/profile.types';
+
 import { join } from 'path';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { RESUME_UPLOADS_DIR } from 'src/common/constatns/file-paths';
-import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
-  // Your service method focuses on fetching and returning raw data (Entities).
-  // It doesn’t worry about shaping the response or exposing only certain fields.
-  // Also, you can shape your response easily without manually filtering the data everywhere.
-  async findAll(
-    paginationDto: PaginationDto,
-  ): Promise<PaginatedResult<UserWithoutCredeitals>> {
+  async findAll(paginationDto: PaginationDto): Promise<PaginatedResult<User>> {
     const page = paginationDto.page ?? 1;
     const limit = paginationDto.limit ?? 10;
 
     const [users, total] = await this.userRepo.findAndCount({
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'location',
-        'resumeUrl',
-        'role',
-        'createdAt',
-        'updatedAt',
-      ],
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
@@ -66,62 +44,19 @@ export class UsersService {
     };
   }
 
-  async findOneByEmail(email: string): Promise<UserWithoutCredeitals | null> {
+  async findOneByEmail(email: string): Promise<User | null> {
     return this.userRepo.findOne({
       where: { email },
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'location',
-        'resumeUrl',
-        'role',
-        'createdAt',
-        'updatedAt',
-      ],
     });
   }
 
-  async findOneById(id: number): Promise<UserWithoutCredeitals | null> {
+  async findOneById(id: number): Promise<User | null> {
     return this.userRepo.findOne({
       where: { id },
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'location',
-        'resumeUrl',
-        'role',
-        'createdAt',
-        'updatedAt',
-      ],
     });
   }
 
-  async findOneForCredentials(
-    criteria: { id?: number; email?: string },
-    include: { password?: boolean; refreshToken?: boolean },
-  ): Promise<UserWithCredentials | null> {
-    const select: (keyof User)[] = ['id', 'email', 'role'];
-
-    if (include.password) {
-      select.push('password');
-    }
-    if (include.refreshToken) {
-      select.push('refreshToken');
-    }
-
-    const query: FindOneOptions<User> = {
-      where: criteria,
-      select,
-    };
-
-    return this.userRepo.findOne(query);
-  }
-
-  async create(createUserDto: CreateUserDto): Promise<SafeUser> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.findOneByEmail(createUserDto.email);
 
     if (existingUser) {
@@ -136,17 +71,10 @@ export class UsersService {
 
     const newUser = await this.userRepo.save(user);
 
-    return {
-      id: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
-    };
+    return newUser;
   }
 
-  async update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<UserWithoutCredeitals> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOneById(id);
     if (!user) throw new NotFoundException('User not found');
 
@@ -154,30 +82,15 @@ export class UsersService {
       await this.validateEmail(updateUserDto.email, id);
     }
     Object.assign(user, updateUserDto);
-    await this.userRepo.save(user);
+    const updatedUser = await this.userRepo.save(user);
 
-    const updated = await this.findOneById(id);
-
-    if (!updated)
-      throw new InternalServerErrorException('Failed to fetch updated user');
-
-    return {
-      id: updated.id,
-      firstName: updated.firstName,
-      lastName: updated.lastName,
-      email: updated.email,
-      role: updated.role,
-      location: updated.location,
-      resumeUrl: updated.resumeUrl,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-    };
+    return updatedUser;
   }
 
   async updateFromProfile(
     id: number,
     updateProfileDto: UpdateProfileDto,
-  ): Promise<PublicProfile> {
+  ): Promise<User> {
     const user = await this.findOneById(id);
     if (!user) throw new NotFoundException('User not found');
 
@@ -187,22 +100,9 @@ export class UsersService {
 
     Object.assign(user, updateProfileDto);
 
-    await this.userRepo.save(user);
+    const updatedProfile = await this.userRepo.save(user);
 
-    const updated = await this.findOneById(id);
-
-    if (!updated)
-      throw new InternalServerErrorException('Failed to fetch updated user');
-
-    return {
-      id: updated.id,
-      firstName: updated.firstName,
-      lastName: updated.lastName,
-      email: updated.email,
-      location: updated.location,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-    };
+    return updatedProfile;
   }
 
   async delete(id: number): Promise<boolean> {
@@ -217,10 +117,7 @@ export class UsersService {
   }
 
   async updateRefreshToken(id: number, refreshToken: string) {
-    const user = await this.findOneForCredentials(
-      { id },
-      { refreshToken: true },
-    );
+    const user = await this.findOneById(id);
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -228,10 +125,7 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async changePassword(
-    user: UserWithCredentials,
-    dto: ChangePasswordDto,
-  ): Promise<void> {
+  async changePassword(user: User, dto: ChangePasswordDto): Promise<void> {
     const hashedPassword = await hash(dto.newPassword, 10);
     user.password = hashedPassword;
     await this.userRepo.save(user);

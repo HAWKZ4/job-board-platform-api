@@ -1,6 +1,7 @@
 import { Expose } from 'class-transformer';
 import { UserRole } from 'src/common/enums/user-role.enum';
 
+// Full user response ADMIN
 export class UserDto {
   @Expose()
   id: number;

@@ -24,6 +24,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
+import { SafeUserDto } from './dtos/safe-user.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 
 @Serialize(UserDto)
@@ -50,7 +51,6 @@ export class UsersController {
 
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Serialize(UserDto)
   @Get('/email/:email')
   async getUserByEmail(@Param('email') email: string): Promise<UserDto> {
     const user = await this.usersService.findOneByEmail(email);
@@ -60,7 +60,6 @@ export class UsersController {
 
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Serialize(UserDto)
   @Get('/:id')
   async getUserById(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
     const user = await this.usersService.findOneById(id);
@@ -68,12 +67,12 @@ export class UsersController {
     return user;
   }
 
+  @Serialize(SafeUserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Serialize(UserDto)
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<SafeUser> {
-   return await this.usersService.create(createUserDto);
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<SafeUserDto> {
+    return await this.usersService.create(createUserDto);
   }
 
   @Roles(UserRole.ADMIN)
@@ -92,7 +91,6 @@ export class UsersController {
   @Delete('/:id')
   async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     const deleted = await this.usersService.delete(id);
-
     if (!deleted) throw new NotFoundException('User not found');
   }
 }

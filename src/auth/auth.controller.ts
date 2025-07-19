@@ -15,6 +15,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { LoginRequestTransformGuard } from './guards/login-request-trasnform.guard';
 import { SetResponseMessage } from 'src/common/decorators/set-response-message.decorator';
+import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 
 @Controller('auth')
 export class AuthController {
@@ -41,9 +43,12 @@ export class AuthController {
     await this.authService.login(user, response);
   }
 
+  @Serialize(SafeUserDto)
   @HttpCode(201)
   @Post('register')
-  async register(@Body() registerUserDto: RegisterUserDto): Promise<SafeUser> {
+  async register(
+    @Body() registerUserDto: RegisterUserDto,
+  ): Promise<SafeUserDto> {
     return await this.authService.register(registerUserDto);
   }
 

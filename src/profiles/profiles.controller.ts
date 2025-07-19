@@ -14,7 +14,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import * as fs from 'fs';
 import { ProfilesService } from './profiles.service';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { ProfileDto } from './dtos/profile.dto';
@@ -26,12 +25,11 @@ import { DeleteProfileDto } from './dtos/delete-profile.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { PublicProfile } from './types/profile.types';
 import { AuthService } from 'src/auth/auth.service';
 import { diskStorage } from 'multer';
 import { RESUME_UPLOADS_DIR } from '../common/constatns/file-paths';
 import { fileNameEditor, pdfFileFilter } from '../common/utils/file.utils';
+import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -46,7 +44,7 @@ export class ProfilesController {
   async updateProfile(
     @CurrentUser() user: SafeUser,
     @Body() updateProfileDto: UpdateProfileDto,
-  ): Promise<PublicProfile> {
+  ): Promise<ProfileDto> {
     return this.profilesService.update(user.id, updateProfileDto);
   }
 

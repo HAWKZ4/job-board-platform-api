@@ -8,6 +8,7 @@ import { TokenPayload } from './interfaces/token-payload.interface';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +23,7 @@ export class AuthService {
       this.configService.getOrThrow('NODE_ENV') === 'production';
   }
 
-  async register(registerUserDto: RegisterUserDto): Promise<SafeUser> {
+  async register(registerUserDto: RegisterUserDto): Promise<User> {
     return await this.usersService.create({
       ...registerUserDto,
       role: UserRole.USER,
@@ -42,10 +43,7 @@ export class AuthService {
   }
 
   async verifyUser(email: string, password: string): Promise<SafeUser> {
-    const user = await this.usersService.findOneForCredentials(
-      { email },
-      { password: true },
-    );
+    const user = await this.usersService.findOneByEmail(email);
 
     if (!user) throw new UnauthorizedException();
 
@@ -64,10 +62,7 @@ export class AuthService {
     refreshToken: string,
     userId: number,
   ): Promise<SafeUser> {
-    const user = await this.usersService.findOneForCredentials(
-      { id: userId },
-      { refreshToken: true },
-    );
+    const user = await this.usersService.findOneById(userId);
     if (!user?.refreshToken) throw new UnauthorizedException();
 
     const validToken = await compare(refreshToken, user?.refreshToken);

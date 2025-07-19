@@ -14,12 +14,11 @@ import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { DeleteProfileDto } from './dtos/delete-profile.dto';
 import { compare } from 'bcryptjs';
 import { ChangePasswordDto } from './dtos/change-password.dto';
-import { PublicProfile } from './types/profile.types';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { ConfigService } from '@nestjs/config';
-import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { UserWithoutCredeitals } from 'src/common/types/user.types';
 import { VALID_FILENAME_REGEX } from 'src/common/constatns/constants';
+import { User } from 'src/users/entities/user.entity';
+import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 
 @Injectable()
 export class ProfilesService {
@@ -28,18 +27,12 @@ export class ProfilesService {
     private readonly configService: ConfigService,
   ) {}
 
-  async update(
-    id: number,
-    updateProfileDto: UpdateProfileDto,
-  ): Promise<PublicProfile> {
+  async update(id: number, updateProfileDto: UpdateProfileDto): Promise<User> {
     return this.usersService.updateFromProfile(id, updateProfileDto);
   }
 
   async delete(id: number, deleteProfileDto: DeleteProfileDto): Promise<void> {
-    const user = await this.usersService.findOneForCredentials(
-      { id },
-      { password: true },
-    );
+    const user = await this.usersService.findOneById(id);
 
     if (!user) throw new NotFoundException('User not found');
 
@@ -47,14 +40,13 @@ export class ProfilesService {
 
     if (!isMatch) throw new UnauthorizedException('Invalid password');
 
-    await this.usersService.delete(user.id);
+    const profileDeleted = await this.usersService.delete(user.id);
+    if (!profileDeleted)
+      throw new InternalServerErrorException('Could not delete profile');
   }
 
   async changePassword(id: number, changePasswordDto: ChangePasswordDto) {
-    const user = await this.usersService.findOneForCredentials(
-      { id },
-      { password: true },
-    );
+    const user = await this.usersService.findOneById(id);
     if (!user) throw new NotFoundException('User not found');
     const isMatch = await compare(
       changePasswordDto.currentPassword,
@@ -119,10 +111,7 @@ export class ProfilesService {
     }
   }
 
-  private checkUserAuthorization(
-    user: UserWithoutCredeitals,
-    filename: string,
-  ): void {
+  private checkUserAuthorization(user: User, filename: string): void {
     if (user.role === UserRole.ADMIN) return;
 
     if (!user.resumeUrl) {
