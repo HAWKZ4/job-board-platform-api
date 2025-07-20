@@ -89,8 +89,18 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(204)
   @Delete('/:id')
-  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    const deleted = await this.usersService.delete(id);
-    if (!deleted) throw new NotFoundException('User not found');
+  async deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() force?: 'true' | 'false',
+  ): Promise<void> {
+    const isForceDelete = force === 'true';
+    await this.usersService.delete(id, isForceDelete);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch('/restore/:id')
+  async restoreJob(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.usersService.restore(id);
   }
 }

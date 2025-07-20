@@ -105,15 +105,21 @@ export class UsersService {
     return updatedProfile;
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(id: number, force: boolean = false): Promise<void> {
     const user = await this.findOneById(id);
+    if (!user) throw new NotFoundException('User not found');
+
     if (user?.resumeUrl) {
       const fullPath = join(process.cwd(), user.resumeUrl);
       await fs.access(fullPath); // check if file exists, throws if not
       await fs.unlink(fullPath);
     }
-    const result = await this.userRepo.delete(id);
-    return (result.affected ?? 0) > 0;
+
+    if (force) {
+      await this.userRepo.remove(user);
+    } else {
+      await this.userRepo.softDelete(id);
+    }
   }
 
   async updateRefreshToken(id: number, refreshToken: string) {
@@ -167,5 +173,12 @@ export class UsersService {
 
   async clearRefreshToken(userId: number): Promise<void> {
     await this.userRepo.update(userId, { refreshToken: null });
+  }
+
+  async restore(id: number): Promise<void> {
+    const result = await this.userRepo.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Job not found or already active');
+    }
   }
 }
