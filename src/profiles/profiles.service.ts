@@ -40,9 +40,7 @@ export class ProfilesService {
 
     if (!isMatch) throw new UnauthorizedException('Invalid password');
 
-    const profileDeleted = await this.usersService.delete(user.id);
-    if (!profileDeleted)
-      throw new InternalServerErrorException('Could not delete profile');
+    await this.usersService.delete(user.id, false);
   }
 
   async changePassword(id: number, changePasswordDto: ChangePasswordDto) {
