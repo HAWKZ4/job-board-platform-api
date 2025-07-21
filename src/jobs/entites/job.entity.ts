@@ -5,8 +5,10 @@ import {
   DeleteDateColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { JobType } from '../enums/job-type.enum';
+import { Application } from 'src/applications/entities/application.entity';
 
 @Entity('jobs')
 export class Job {
@@ -45,6 +47,9 @@ export class Job {
 
   @Column({ default: true })
   isPublished: boolean;
+
+  @OneToMany(() => Application, (application) => application.job)
+  applications: Application[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
