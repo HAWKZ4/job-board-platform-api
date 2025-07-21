@@ -10,10 +10,17 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
 import { JobsModule } from './jobs/jobs.module';
+import { ApplicationsModule } from './applications/applications.module';
+import { Application } from './applications/entities/application.entity';
+import { Job } from './jobs/entites/job.entity';
 
 @Module({
   imports: [
     UsersModule,
+    AuthModule,
+    ProfilesModule,
+    JobsModule,
+    ApplicationsModule,
     ConfigModule.forRoot({
       isGlobal: true, // makes it available everywhere
     }),
@@ -28,7 +35,7 @@ import { JobsModule } from './jobs/jobs.module';
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [User],
+        entities: [User, Application, Job], // include ALL entities used in relations
         autoLoadEntities: true,
         synchronize: configService.getOrThrow('NODE_ENV') === 'development',
       }),
@@ -39,6 +46,8 @@ import { JobsModule } from './jobs/jobs.module';
     ProfilesModule,
 
     JobsModule,
+
+    ApplicationsModule,
   ],
   controllers: [AppController],
   providers: [
