@@ -1,5 +1,14 @@
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -34,5 +43,14 @@ export class ApplicationsController {
       paginationDto,
       user,
     );
+  }
+
+  @Serialize(UserApplicationDto)
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id')
+  async getApplication(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UserApplicationDto> {
+    return this.applicationsService.findOneApplicationForUser(id);
   }
 }

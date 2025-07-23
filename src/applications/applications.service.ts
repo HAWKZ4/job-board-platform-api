@@ -87,4 +87,15 @@ export class ApplicationsService {
       },
     };
   }
+
+  async findOneApplicationForUser(id: number) {
+    const application = await this.appRepo.findOne({
+      where: { id },
+      relations: ['job'],
+    });
+
+    if (!application) throw new NotFoundException('Application not found');
+
+    return application;
+  }
 }
