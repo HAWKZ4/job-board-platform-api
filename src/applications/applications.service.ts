@@ -88,7 +88,7 @@ export class ApplicationsService {
     };
   }
 
-  async findOneApplicationForUser(id: number) {
+  async findOneApplicationForUser(id: number): Promise<Application> {
     const application = await this.appRepo.findOne({
       where: { id },
       relations: ['job'],
@@ -97,5 +97,19 @@ export class ApplicationsService {
     if (!application) throw new NotFoundException('Application not found');
 
     return application;
+  }
+
+  async withdraw(applicationId: number, user: SafeUser): Promise<void> {
+    const application = await this.appRepo.findOne({
+      where: { id: applicationId, user: { id: user.id } },
+    });
+
+    if (!application) throw new NotFoundException('Applicaiton not found');
+
+    if (application.deletedAt) {
+      throw new ConflictException('Application already withdrawn');
+    }
+
+    await this.appRepo.softRemove(application);
   }
 }

@@ -2,7 +2,9 @@ import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -52,5 +54,15 @@ export class ApplicationsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UserApplicationDto> {
     return this.applicationsService.findOneApplicationForUser(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
+  @Delete('/:id/withdraw')
+  async withdrawApplication(
+    @CurrentUser() user: SafeUser,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    await this.applicationsService.withdraw(id, user);
   }
 }
