@@ -1,11 +1,13 @@
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateApplicationDto } from './dtos/create-application.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { UserApplicationDto } from './dtos/user-application.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 
 @Controller('applications')
 export class ApplicationsController {
@@ -19,5 +21,18 @@ export class ApplicationsController {
     @Body() createApplicationDto: CreateApplicationDto,
   ) {
     return this.applicationsService.create(createApplicationDto, user);
+  }
+
+  @Serialize(UserApplicationDto)
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getMyApplications(
+    @CurrentUser() user: SafeUser,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResult<UserApplicationDto>> {
+    return this.applicationsService.findAllApplicationsForUser(
+      paginationDto,
+      user,
+    );
   }
 }

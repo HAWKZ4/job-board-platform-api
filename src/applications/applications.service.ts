@@ -11,6 +11,8 @@ import { Job } from 'src/jobs/entites/job.entity';
 import { CreateApplicationDto } from './dtos/create-application.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { User } from 'src/users/entities/user.entity';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 
 @Injectable()
 export class ApplicationsService {
@@ -36,7 +38,7 @@ export class ApplicationsService {
       where: { id: safeUser.id },
     });
 
-    if(!user) throw new NotFoundException("User not found")
+    if (!user) throw new NotFoundException('User not found');
 
     if (!user.resumeUrl)
       throw new BadRequestException('Please upload you resume before applying');
@@ -59,5 +61,30 @@ export class ApplicationsService {
     });
 
     return this.appRepo.save(application);
+  }
+
+  async findAllApplicationsForUser(
+    paginationDto: PaginationDto,
+    user: SafeUser,
+  ): Promise<PaginatedResult<Application>> {
+    const page = paginationDto.page ?? 1;
+    const limit = paginationDto.limit ?? 10;
+
+    const [applications, total] = await this.appRepo.findAndCount({
+      where: { user: { id: user.id } },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
+      relations: ['job'],
+    });
+
+    return {
+      data: applications,
+      meta: {
+        total,
+        page,
+        limit,
+      },
+    };
   }
 }
