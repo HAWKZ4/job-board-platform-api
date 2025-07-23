@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Application } from './entities/application.entity';
@@ -25,13 +26,17 @@ export class ApplicationsService {
 
   async create(createApplicationDto: CreateApplicationDto, safeUser: SafeUser) {
     const { jobId, coverLetter } = createApplicationDto;
-    const job = await this.jobRepo.findOneByOrFail({
-      id: jobId,
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId },
     });
 
-    const user = await this.userRepo.findOneByOrFail({
-      id: safeUser.id,
+    if (!job) throw new NotFoundException('Job not found');
+
+    const user = await this.userRepo.findOne({
+      where: { id: safeUser.id },
     });
+
+    if(!user) throw new NotFoundException("User not found")
 
     if (!user.resumeUrl)
       throw new BadRequestException('Please upload you resume before applying');
