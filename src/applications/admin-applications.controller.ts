@@ -29,8 +29,14 @@ export class AdminApplicationsController {
   @Get()
   async getAllApplicationcs(
     @Query() paginationDto: PaginationDto,
+    @Query('jobId') jobId?: number,
+    @Query('userId') userId?: number,
   ): Promise<PaginatedResult<AdminApplicationDto>> {
-    return this.applicationsService.findAllApplicationsForAdmin(paginationDto);
+    return this.applicationsService.findAllApplicationsForAdmin(
+      paginationDto,
+      jobId,
+      userId,
+    );
   }
 
   @Serialize(AdminApplicationDto)

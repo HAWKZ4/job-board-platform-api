@@ -118,11 +118,19 @@ export class ApplicationsService {
   // Admin Methods
   async findAllApplicationsForAdmin(
     paginationDto: PaginationDto,
+    jobId?: number,
+    userId?: number,
   ): Promise<PaginatedResult<Application>> {
     const page = paginationDto.page ?? 1;
     const limit = paginationDto.limit ?? 10;
 
+    const where: any = {};
+
+    if (jobId) where.job = { id: jobId };
+    if (userId) where.user = { id: userId };
+
     const [applications, total] = await this.appRepo.findAndCount({
+      where,
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
@@ -149,7 +157,7 @@ export class ApplicationsService {
 
     return application;
   }
-
+  
   async updateApplicationStatus(
     id: number,
     updateApplicationStatusDto: UpdateApplicationStatusDto,
