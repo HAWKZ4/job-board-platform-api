@@ -6,6 +6,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { UpdateJobDto } from './dtos/update-jobs.dto';
+import { AdminJobQueryDto } from './dtos/admin-job-query.dto';
 
 @Injectable()
 export class JobsService {
@@ -48,12 +49,30 @@ export class JobsService {
   // Admin-Methods
   async findAllByAdmin(
     paginationDto: PaginationDto,
-    includeDeleted: boolean,
+    adminJobQueryDto: AdminJobQueryDto,
   ): Promise<PaginatedResult<Job>> {
     const { page = 1, limit = 10 } = paginationDto;
+    const { showDeleted, company, location, title } = adminJobQueryDto;
+
     const query = this.jobRepo.createQueryBuilder('job');
 
-    if (includeDeleted) query.withDeleted();
+    if (showDeleted === 'true') {
+      query.withDeleted();
+    }
+
+    if (company) {
+      query.andWhere('job.company ILIKE :company', { company: `%${company}%` });
+    }
+
+    if (location) {
+      query.andWhere('job.location ILIKE :location', {
+        location: `%${location}%`,
+      });
+    }
+
+    if (title) {
+      query.andWhere('job.title ILIKE :title', { title: `%${title}%` });
+    }
 
     query
       .orderBy('job.createdAt', 'DESC')

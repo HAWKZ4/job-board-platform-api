@@ -22,6 +22,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { AdminJobQueryDto } from './dtos/admin-job-query.dto';
 
 @Controller('admin/jobs')
 export class AdminJobsController {
@@ -33,10 +34,9 @@ export class AdminJobsController {
   @Get()
   async getAllJobs(
     @Query() pagiantionDto: PaginationDto,
-    @Query('showDeleted') showDeleted?: 'true' | 'false',
+    @Query() adminJobQueryDto: AdminJobQueryDto,
   ): Promise<PaginatedResult<AdminJobDto>> {
-    const includeDeleted = showDeleted === 'true';
-    return this.jobsService.findAllByAdmin(pagiantionDto, includeDeleted);
+    return this.jobsService.findAllByAdmin(pagiantionDto, adminJobQueryDto);
   }
 
   @Serialize(AdminJobDto)
