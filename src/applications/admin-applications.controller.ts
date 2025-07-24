@@ -1,6 +1,15 @@
 import { PaginatedResult } from './../common/interfaces/paginated-result.interface';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -24,6 +33,16 @@ export class AdminApplicationsController {
   async getAllApplicationcs(
     @Query() paginationDto: PaginationDto,
   ): Promise<PaginatedResult<AdminApplicationDto>> {
-    return this.applicationsService.findAllApplicationsForAdmin(paginationDto) ;
+    return this.applicationsService.findAllApplicationsForAdmin(paginationDto);
+  }
+
+  @Serialize(AdminApplicationDto)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('/:id')
+  async getApplication(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<AdminApplicationDto> {
+    return this.applicationsService.getApplicationByAdmin(id);
   }
 }
