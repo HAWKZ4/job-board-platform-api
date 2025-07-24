@@ -1,26 +1,23 @@
 import { PaginatedResult } from './../common/interfaces/paginated-result.interface';
-import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import {
   Body,
   Controller,
   Get,
   Param,
   ParseIntPipe,
-  Post,
+  Patch,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { CreateApplicationDto } from './dtos/create-application.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { UserApplicationDto } from './dtos/user-application.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { AdminApplicationDto } from './dtos/admin-application.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { UpdateApplicationStatusDto } from './dtos/update-application-status.dto';
 
 @Controller('/admin/applications')
 export class AdminApplicationsController {
@@ -44,5 +41,19 @@ export class AdminApplicationsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<AdminApplicationDto> {
     return this.applicationsService.getApplicationByAdmin(id);
+  }
+
+  @Serialize(AdminApplicationDto)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch('/:id')
+  async updateApplicationStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateApplicationStatusDto: UpdateApplicationStatusDto,
+  ): Promise<AdminApplicationDto> {
+    return this.applicationsService.updateApplicationStatus(
+      id,
+      updateApplicationStatusDto,
+    );
   }
 }

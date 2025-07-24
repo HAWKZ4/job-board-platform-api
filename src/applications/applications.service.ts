@@ -1,3 +1,4 @@
+import { UpdateApplicationStatusDto } from './dtos/update-application-status.dto';
 import {
   BadRequestException,
   ConflictException,
@@ -147,5 +148,17 @@ export class ApplicationsService {
     if (!application) throw new NotFoundException('Application not found');
 
     return application;
+  }
+
+  async updateApplicationStatus(
+    id: number,
+    updateApplicationStatusDto: UpdateApplicationStatusDto,
+  ): Promise<Application> {
+    const application = await this.appRepo.findOne({ where: { id } });
+    if (!application) throw new NotFoundException('Application not found');
+
+    application.status = updateApplicationStatusDto.status;
+    const savedApplication = await this.appRepo.save(application);
+    return savedApplication;
   }
 }
