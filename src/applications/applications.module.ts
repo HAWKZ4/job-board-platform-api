@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Application } from './entities/application.entity';
 import { JobsModule } from 'src/jobs/jobs.module';
 import { UsersModule } from 'src/users/users.module';
+import { AdminApplicationsController } from './admin-applications.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Application]), JobsModule, UsersModule],
   providers: [ApplicationsService],
-  controllers: [ApplicationsController],
+  controllers: [ApplicationsController, AdminApplicationsController],
 })
 export class ApplicationsModule {}

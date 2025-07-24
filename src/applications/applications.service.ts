@@ -26,6 +26,7 @@ export class ApplicationsService {
     private readonly userRepo: Repository<User>,
   ) {}
 
+  // User Methods
   async create(createApplicationDto: CreateApplicationDto, safeUser: SafeUser) {
     const { jobId, coverLetter } = createApplicationDto;
     const job = await this.jobRepo.findOne({
@@ -111,5 +112,29 @@ export class ApplicationsService {
     }
 
     await this.appRepo.softRemove(application);
+  }
+
+  // Admin Methods
+  async findAllApplicationsForAdmin(
+    paginationDto: PaginationDto,
+  ): Promise<PaginatedResult<Application>> {
+    const page = paginationDto.page ?? 1;
+    const limit = paginationDto.limit ?? 10;
+
+    const [applications, total] = await this.appRepo.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
+      relations: ['job', 'user'],
+    });
+
+    return {
+      data: applications,
+      meta: {
+        total,
+        page,
+        limit,
+      },
+    };
   }
 }
