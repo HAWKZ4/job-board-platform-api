@@ -118,7 +118,7 @@ export class UsersService {
     if (force) {
       await this.userRepo.remove(user);
     } else {
-      await this.userRepo.softDelete(id);
+      await this.userRepo.softRemove(user);
     }
   }
 
