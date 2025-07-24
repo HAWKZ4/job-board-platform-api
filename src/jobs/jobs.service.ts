@@ -118,7 +118,7 @@ export class JobsService {
     if (force) {
       await this.jobRepo.remove(job);
     } else {
-      await this.jobRepo.softDelete(id);
+      await this.jobRepo.softRemove(job);
     }
   }
 }
