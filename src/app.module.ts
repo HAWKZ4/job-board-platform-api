@@ -7,12 +7,13 @@ import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
 import { JobsModule } from './jobs/jobs.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { Application } from './applications/entities/application.entity';
 import { Job } from './jobs/entites/job.entity';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -26,7 +27,28 @@ import { Job } from './jobs/entites/job.entity';
     }),
 
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [
+        ConfigModule,
+        ThrottlerModule.forRoot({
+          throttlers: [
+            {
+              name: 'short',
+              ttl: 1000, // 1sec
+              limit: 3, // 3req
+            },
+            {
+              name: 'medium',
+              ttl: 10000,
+              limit: 20,
+            },
+            {
+              name: 'long',
+              ttl: 60000,
+              limit: 100,
+            },
+          ],
+        }),
+      ],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
@@ -56,6 +78,7 @@ import { Job } from './jobs/entites/job.entity';
       provide: APP_INTERCEPTOR,
       useClass: TransformResponseInterceptor,
     },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}
