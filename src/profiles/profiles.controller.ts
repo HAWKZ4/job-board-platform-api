@@ -30,6 +30,7 @@ import { diskStorage } from 'multer';
 import { RESUME_UPLOADS_DIR } from '../common/constatns/file-paths';
 import { fileNameEditor, pdfFileFilter } from '../common/utils/file.utils';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -37,6 +38,8 @@ export class ProfilesController {
     private readonly profilesService: ProfilesService,
     private readonly authService: AuthService,
   ) {}
+
+  private readonly logger = new MyLoggerService(ProfilesController.name);
 
   @Serialize(ProfileDto)
   @UseGuards(JwtAuthGuard)
@@ -91,6 +94,12 @@ export class ProfilesController {
     if (!file) throw new BadRequestException('No file uploaded');
 
     const relativeResumePath = `/uploads/resumes/${file.filename}`;
+
+    this.logger.log(
+      `User ${user.id} uploaded resume: ${relativeResumePath}`,
+      ProfilesController.name,
+    );
+
     await this.profilesService.updateUserResumeUrl(user.id, relativeResumePath);
   }
 

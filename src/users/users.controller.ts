@@ -26,11 +26,14 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Serialize(UserDto)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  private readonly logger = new MyLoggerService(UsersController.name);
 
   @UseGuards(JwtAuthGuard)
   @Get('/me')
@@ -72,6 +75,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto): Promise<SafeUserDto> {
+    this.logger.log(
+      `Admin created user with email ${createUserDto.email}`,
+      UsersController.name,
+    );
     return await this.usersService.create(createUserDto);
   }
 

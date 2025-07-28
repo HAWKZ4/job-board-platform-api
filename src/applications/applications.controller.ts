@@ -19,10 +19,13 @@ import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { UserApplicationDto } from './dtos/user-application.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
+
+  private readonly logger = new MyLoggerService(ApplicationsController.name);
 
   @Serialize(UserApplicationDto)
   @UseGuards(JwtAuthGuard)
@@ -31,6 +34,11 @@ export class ApplicationsController {
     @CurrentUser() user: SafeUser,
     @Body() createApplicationDto: CreateApplicationDto,
   ) {
+    this.logger.log(
+      `User ${user.id} is applying to Job ${createApplicationDto.jobId}`,
+      ApplicationsService.name,
+    );
+
     return this.applicationsService.create(createApplicationDto, user);
   }
 

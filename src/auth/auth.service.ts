@@ -9,6 +9,7 @@ import { RegisterUserDto } from './dtos/register-user.dto';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { User } from 'src/users/entities/user.entity';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,8 @@ export class AuthService {
       this.configService.getOrThrow('NODE_ENV') === 'production';
   }
 
+  private readonly logger = new MyLoggerService(AuthService.name);
+
   async register(registerUserDto: RegisterUserDto): Promise<User> {
     return await this.usersService.create({
       ...registerUserDto,
@@ -35,6 +38,7 @@ export class AuthService {
     const hashedRefreshToken = await hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
     await this.setCookies(response, accessToken, refreshToken);
+    this.logger.log(`User ${user.id} logged in successfully`, AuthService.name);
   }
 
   async logout(response: Response, userId: number): Promise<void> {
