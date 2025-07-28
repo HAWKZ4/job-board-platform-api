@@ -14,6 +14,7 @@ import { ApplicationsModule } from './applications/applications.module';
 import { Application } from './applications/entities/application.entity';
 import { Job } from './jobs/entites/job.entity';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { MyLoggerModule } from './my-logger/my-logger.module';
 
 @Module({
   imports: [
@@ -70,6 +71,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     JobsModule,
 
     ApplicationsModule,
+
+    MyLoggerModule,
   ],
   controllers: [AppController],
   providers: [
