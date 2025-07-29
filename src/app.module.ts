@@ -14,6 +14,7 @@ import { Application } from './applications/entities/application.entity';
 import { Job } from './jobs/entites/job.entity';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { MyLoggerModule } from './my-logger/my-logger.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -72,6 +73,8 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
     ApplicationsModule,
 
     MyLoggerModule,
+
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

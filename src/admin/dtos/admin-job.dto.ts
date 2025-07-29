@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { PublicJobDto } from './public-job.dto';
+import { PublicJobDto } from '../../jobs/dtos/public-job.dto';
 
 export class AdminJobDto extends PublicJobDto {
   @Expose()

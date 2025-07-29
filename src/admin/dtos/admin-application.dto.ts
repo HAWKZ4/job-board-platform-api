@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { ApplicationStatus } from '../enums/application-status.enum';
+import { ApplicationStatus } from '../../applications/enums/application-status.enum';
 
 @Expose()
 export class AdminUserInfo {

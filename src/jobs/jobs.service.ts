@@ -5,11 +5,11 @@ import { IsNull, Repository } from 'typeorm';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { UpdateJobDto } from './dtos/update-jobs.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { AdminJobDto } from './dtos/admin-job.dto';
+import { AdminJobDto } from '../admin/dtos/admin-job.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
 import { PublicJobDto } from './dtos/public-job.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
-import { AdminJobQueryDto } from './dtos/admin-job-query.dto';
+import { AdminJobQueryDto } from '../admin/dtos/admin-job-query.dto';
 
 @Injectable()
 export class JobsService {

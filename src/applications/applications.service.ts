@@ -16,8 +16,8 @@ import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { UserApplicationDto } from './dtos/user-application.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
-import { AdminApplicationQueryDto } from './dtos/admin-application-query.dto';
-import { AdminApplicationDto } from './dtos/admin-application.dto';
+import { AdminApplicationQueryDto } from '../admin/dtos/admin-application-query.dto';
+import { AdminApplicationDto } from '../admin/dtos/admin-application.dto';
 
 @Injectable()
 export class ApplicationsService {

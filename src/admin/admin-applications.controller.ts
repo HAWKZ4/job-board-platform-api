@@ -8,21 +8,20 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApplicationsService } from './applications.service';
+import { ApplicationsService } from '../applications/applications.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminApplicationDto } from './dtos/admin-application.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { UpdateApplicationStatusDto } from './dtos/update-application-status.dto';
+import { UpdateApplicationStatusDto } from '../applications/dtos/update-application-status.dto';
 import { AdminApplicationQueryDto } from './dtos/admin-application-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('/admin/applications')
 export class AdminApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
-
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
@@ -33,7 +32,6 @@ export class AdminApplicationsController {
       adminApplicationsQueryDto,
     );
   }
-
   @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -43,7 +41,6 @@ export class AdminApplicationsController {
   ): Promise<AdminApplicationDto> {
     return this.applicationsService.getApplicationByAdmin(id);
   }
-
   @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)

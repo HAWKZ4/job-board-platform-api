@@ -11,11 +11,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { JobsService } from './jobs.service';
-import { CreateJobDto } from './dtos/create-job.dto';
+import { JobsService } from '../jobs/jobs.service';
+import { CreateJobDto } from '../jobs/dtos/create-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminJobDto } from './dtos/admin-job.dto';
-import { UpdateJobDto } from './dtos/update-jobs.dto';
+import { UpdateJobDto } from '../jobs/dtos/update-jobs.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
