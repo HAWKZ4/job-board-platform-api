@@ -17,9 +17,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateApplicationDto } from './dtos/create-application.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { UserApplicationDto } from './dtos/user-application.dto';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('applications')
 export class ApplicationsController {
@@ -42,16 +42,15 @@ export class ApplicationsController {
     return this.applicationsService.create(createApplicationDto, user);
   }
 
-  @Serialize(UserApplicationDto)
   @UseGuards(JwtAuthGuard)
   @Get()
   async getMyApplications(
     @CurrentUser() user: SafeUser,
-    @Query() paginationDto: PaginationDto,
-  ): Promise<PaginatedResult<UserApplicationDto>> {
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<Pagination<UserApplicationDto>> {
     return this.applicationsService.findAllApplicationsForUser(
-      paginationDto,
       user,
+      paginationQueryDto,
     );
   }
 

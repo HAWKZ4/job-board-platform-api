@@ -22,19 +22,19 @@ import { UserRole } from 'src/common/enums/user-role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { Pagination } from 'nestjs-typeorm-paginate';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 
-@Serialize(UserDto)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   private readonly logger = new MyLoggerService(UsersController.name);
 
+  @Serialize(UserDto)
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   async getMe(@CurrentUser() user: SafeUser): Promise<UserDto> {
@@ -47,11 +47,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async getAllUsers(
-    @Query() paginationDto: PaginationDto,
-  ): Promise<PaginatedResult<UserDto>> {
-    return this.usersService.findAll(paginationDto);
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ): Promise<Pagination<UserDto>> {
+    return this.usersService.findAll(paginationQueryDto);
   }
 
+  @Serialize(UserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/email/:email')
@@ -61,6 +62,7 @@ export class UsersController {
     return user;
   }
 
+  @Serialize(UserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
@@ -70,6 +72,7 @@ export class UsersController {
     return user;
   }
 
+  @Serialize(UserDto)
   @Serialize(SafeUserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -82,6 +85,7 @@ export class UsersController {
     return await this.usersService.create(createUserDto);
   }
 
+  @Serialize(UserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id')

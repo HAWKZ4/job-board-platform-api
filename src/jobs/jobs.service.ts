@@ -2,10 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from './entites/job.entity';
 import { IsNull, Repository } from 'typeorm';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { UpdateJobDto } from './dtos/update-jobs.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
+import { AdminJobDto } from './dtos/admin-job.dto';
+import { paginateAndMap } from 'src/common/utils/pagination';
+import { PublicJobDto } from './dtos/public-job.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import { AdminJobQueryDto } from './dtos/admin-job-query.dto';
 
 @Injectable()
@@ -16,26 +19,23 @@ export class JobsService {
 
   // User-Methods
   async findAllByUser(
-    paginationDto: PaginationDto,
-  ): Promise<PaginatedResult<Job>> {
-    const page = paginationDto.page ?? 1;
-    const limit = paginationDto.limit ?? 1;
+    paginationQueryDto: PaginationQueryDto,
+  ): Promise<Pagination<PublicJobDto>> {
+    const { page = 1, limit = 10 } = paginationQueryDto;
 
-    const [jobs, total] = await this.jobRepo.findAndCount({
-      where: { deletedAt: IsNull(), isPublished: true },
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.jobRepo
+      .createQueryBuilder('job')
+      .where('job.deletedAt IS NULL')
+      .orderBy('job.createdAt', 'DESC');
 
-    return {
-      data: jobs,
-      meta: {
-        total,
+    return paginateAndMap<Job, PublicJobDto>(
+      qb,
+      {
         page,
         limit,
       },
-    };
+      AdminJobDto,
+    );
   }
 
   async findJobByIdForUser(id: number): Promise<Job> {
@@ -48,47 +48,44 @@ export class JobsService {
 
   // Admin-Methods
   async findAllByAdmin(
-    paginationDto: PaginationDto,
     adminJobQueryDto: AdminJobQueryDto,
-  ): Promise<PaginatedResult<Job>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const { showDeleted, company, location, title } = adminJobQueryDto;
+  ): Promise<Pagination<AdminJobDto>> {
+    const {
+      page = 1,
+      limit = 10,
+      showDeleted,
+      company,
+      location,
+      title,
+    } = adminJobQueryDto;
 
-    const query = this.jobRepo.createQueryBuilder('job');
+    const qb = this.jobRepo
+      .createQueryBuilder('job')
+      .orderBy('job.createdAt', 'DESC');
 
-    if (showDeleted === 'true') {
-      query.withDeleted();
-    }
+    if (showDeleted === 'true') qb.withDeleted();
 
-    if (company) {
-      query.andWhere('job.company ILIKE :company', { company: `%${company}%` });
-    }
+    if (company)
+      qb.andWhere('job.comapny ILIKE company', { company: `%${company}%` });
 
     if (location) {
-      query.andWhere('job.location ILIKE :location', {
+      qb.andWhere('job.location ILIKE :location', {
         location: `%${location}%`,
       });
     }
 
     if (title) {
-      query.andWhere('job.title ILIKE :title', { title: `%${title}%` });
+      qb.andWhere('job.title ILIKE :title', { title: `%${title}%` });
     }
 
-    query
-      .orderBy('job.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
-
-    const [jobs, total] = await query.getManyAndCount();
-
-    return {
-      data: jobs,
-      meta: {
-        total,
+    return paginateAndMap<Job, AdminJobDto>(
+      qb,
+      {
         page,
         limit,
       },
-    };
+      AdminJobDto,
+    );
   }
 
   async findOneByIdForAdmin(id: number): Promise<Job> {

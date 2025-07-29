@@ -1,10 +1,7 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsBooleanString, IsOptional, IsString } from 'class-validator';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 
-export class AdminJobQueryDto {
-  @IsOptional()
-  @IsString()
-  title?: string;
-
+export class AdminJobQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   company?: string;
@@ -14,6 +11,10 @@ export class AdminJobQueryDto {
   location?: string;
 
   @IsOptional()
-  @IsIn(['true', 'false'])
-  showDeleted?: 'true' | 'false';
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsBooleanString()
+  showDeleted?: string;
 }

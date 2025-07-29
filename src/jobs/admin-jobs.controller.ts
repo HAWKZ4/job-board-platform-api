@@ -12,8 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminJobDto } from './dtos/admin-job.dto';
@@ -22,21 +20,20 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminJobQueryDto } from './dtos/admin-job-query.dto';
 
 @Controller('admin/jobs')
 export class AdminJobsController {
   constructor(private readonly jobsService: JobsService) {}
 
-  @Serialize(AdminJobDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async getAllJobs(
-    @Query() pagiantionDto: PaginationDto,
     @Query() adminJobQueryDto: AdminJobQueryDto,
-  ): Promise<PaginatedResult<AdminJobDto>> {
-    return this.jobsService.findAllByAdmin(pagiantionDto, adminJobQueryDto);
+  ): Promise<Pagination<AdminJobDto>> {
+    return this.jobsService.findAllByAdmin(adminJobQueryDto);
   }
 
   @Serialize(AdminJobDto)

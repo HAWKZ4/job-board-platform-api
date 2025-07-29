@@ -1,4 +1,3 @@
-import { PaginatedResult } from './../common/interfaces/paginated-result.interface';
 import {
   Body,
   Controller,
@@ -12,30 +11,26 @@ import {
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { AdminApplicationDto } from './dtos/admin-application.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { UpdateApplicationStatusDto } from './dtos/update-application-status.dto';
+import { AdminApplicationQueryDto } from './dtos/admin-application-query.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('/admin/applications')
 export class AdminApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
 
-  @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async getAllApplicationcs(
-    @Query() paginationDto: PaginationDto,
-    @Query('jobId') jobId?: number,
-    @Query('userId') userId?: number,
-  ): Promise<PaginatedResult<AdminApplicationDto>> {
+    @Query() adminApplicationsQueryDto: AdminApplicationQueryDto,
+  ): Promise<Pagination<AdminApplicationDto>> {
     return this.applicationsService.findAllApplicationsForAdmin(
-      paginationDto,
-      jobId,
-      userId,
+      adminApplicationsQueryDto,
     );
   }
 

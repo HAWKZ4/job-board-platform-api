@@ -7,8 +7,7 @@ import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
+import { APP_GUARD } from '@nestjs/core';
 import { JobsModule } from './jobs/jobs.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { Application } from './applications/entities/application.entity';
@@ -75,13 +74,6 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
     MyLoggerModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformResponseInterceptor,
-    },
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

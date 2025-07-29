@@ -12,8 +12,12 @@ import { Job } from 'src/jobs/entites/job.entity';
 import { CreateApplicationDto } from './dtos/create-application.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { User } from 'src/users/entities/user.entity';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
+import { UserApplicationDto } from './dtos/user-application.dto';
+import { paginateAndMap } from 'src/common/utils/pagination';
+import { AdminApplicationQueryDto } from './dtos/admin-application-query.dto';
+import { AdminApplicationDto } from './dtos/admin-application.dto';
 
 @Injectable()
 export class ApplicationsService {
@@ -66,28 +70,21 @@ export class ApplicationsService {
   }
 
   async findAllApplicationsForUser(
-    paginationDto: PaginationDto,
     user: SafeUser,
-  ): Promise<PaginatedResult<Application>> {
-    const page = paginationDto.page ?? 1;
-    const limit = paginationDto.limit ?? 10;
+    paginationQueryDto: PaginationQueryDto,
+  ): Promise<Pagination<UserApplicationDto>> {
+    const qb = this.appRepo
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.job', 'job')
+      .where('application.userId = :userId', { userId: user.id })
+      .andWhere('job.deletedAt IS NULL')
+      .orderBy('application.createdAt', 'DESC');
 
-    const [applications, total] = await this.appRepo.findAndCount({
-      where: { user: { id: user.id } },
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-      relations: ['job'],
-    });
-
-    return {
-      data: applications,
-      meta: {
-        total,
-        page,
-        limit,
-      },
-    };
+    return paginateAndMap<Application, UserApplicationDto>(
+      qb,
+      paginationQueryDto,
+      UserApplicationDto,
+    );
   }
 
   async findOneApplicationForUser(id: number): Promise<Application> {
@@ -117,34 +114,52 @@ export class ApplicationsService {
 
   // Admin Methods
   async findAllApplicationsForAdmin(
-    paginationDto: PaginationDto,
-    jobId?: number,
-    userId?: number,
-  ): Promise<PaginatedResult<Application>> {
-    const page = paginationDto.page ?? 1;
-    const limit = paginationDto.limit ?? 10;
+    adminApplicationsQueryDto: AdminApplicationQueryDto,
+  ): Promise<Pagination<AdminApplicationDto>> {
+    const { jobId, userId } = adminApplicationsQueryDto;
 
-    const where: any = {};
+    const qb = this.appRepo
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.job', 'job')
+      .leftJoinAndSelect('application.user', 'user')
+      .orderBy('application.createdAt', 'DESC');
 
-    if (jobId) where.job = { id: jobId };
-    if (userId) where.user = { id: userId };
+    if (jobId) {
+      qb.andWhere('application.jobId = :jobId', { jobId });
+    }
 
-    const [applications, total] = await this.appRepo.findAndCount({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-      relations: ['job', 'user'],
-    });
+    if (userId) {
+      qb.andWhere('application.userId = :userId', { userId });
+    }
 
-    return {
-      data: applications,
-      meta: {
-        total,
-        page,
-        limit,
-      },
-    };
+    qb.andWhere('job.deletedAt IS NULL');
+
+    return paginateAndMap<Application, AdminApplicationDto>(
+      qb,
+      adminApplicationsQueryDto,
+      AdminApplicationDto,
+    );
+
+    // const page = paginationDto.page ?? 1;
+    // const limit = paginationDto.limit ?? 10;
+    // const where: any = {};
+    // if (jobId) where.job = { id: jobId };
+    // if (userId) where.user = { id: userId };
+    // const [applications, total] = await this.appRepo.findAndCount({
+    //   where,
+    //   skip: (page - 1) * limit,
+    //   take: limit,
+    //   order: { createdAt: 'DESC' },
+    //   relations: ['job', 'user'],
+    // });
+    // return {
+    //   data: applications,
+    //   meta: {
+    //     total,
+    //     page,
+    //     limit,
+    //   },
+    // };
   }
 
   async getApplicationByAdmin(id: number): Promise<Application> {
@@ -157,7 +172,7 @@ export class ApplicationsService {
 
     return application;
   }
-  
+
   async updateApplicationStatus(
     id: number,
     updateApplicationStatusDto: UpdateApplicationStatusDto,

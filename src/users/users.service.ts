@@ -1,3 +1,4 @@
+import { PaginationQueryDto } from './../common/dtos/pagination-query.dto';
 import {
   ConflictException,
   Injectable,
@@ -10,38 +11,30 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { hash } from 'bcryptjs';
 import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { UpdateProfileDto } from 'src/profiles/dtos/update-profile.dto';
 
 import { join } from 'path';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { RESUME_UPLOADS_DIR } from 'src/common/constatns/file-paths';
+import { Pagination } from 'nestjs-typeorm-paginate';
+import { UserDto } from './dtos/user.dto';
+import { paginateAndMap } from 'src/common/utils/pagination';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
-  async findAll(paginationDto: PaginationDto): Promise<PaginatedResult<User>> {
-    const page = paginationDto.page ?? 1;
-    const limit = paginationDto.limit ?? 10;
 
-    const [users, total] = await this.userRepo.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+  async findAll(
+    paginationQueryDto: PaginationQueryDto,
+  ): Promise<Pagination<UserDto>> {
+    const qb = this.userRepo
+      .createQueryBuilder('user')
+      .orderBy('user.id', 'DESC');
 
-    return {
-      data: users,
-      meta: {
-        total,
-        page,
-        limit,
-      },
-    };
+    return paginateAndMap<User, UserDto>(qb, paginationQueryDto, UserDto);
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
