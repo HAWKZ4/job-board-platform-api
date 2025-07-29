@@ -19,9 +19,9 @@ export class JobsService {
 
   // User-Methods
   async findAllByUser(
-    paginationQueryDto: PaginationQueryDto,
+    dto: PaginationQueryDto,
   ): Promise<Pagination<PublicJobDto>> {
-    const { page = 1, limit = 10 } = paginationQueryDto;
+    const { page = 1, limit = 10 } = dto;
 
     const qb = this.jobRepo
       .createQueryBuilder('job')
@@ -38,7 +38,7 @@ export class JobsService {
     );
   }
 
-  async findJobByIdForUser(id: number): Promise<Job> {
+  async findOneForUser(id: number): Promise<Job> {
     const job = await this.jobRepo.findOne({
       where: { id, isPublished: true, deletedAt: IsNull() },
     });
@@ -48,16 +48,9 @@ export class JobsService {
 
   // Admin-Methods
   async findAllByAdmin(
-    adminJobQueryDto: AdminJobQueryDto,
+    dto: AdminJobQueryDto,
   ): Promise<Pagination<AdminJobDto>> {
-    const {
-      page = 1,
-      limit = 10,
-      showDeleted,
-      company,
-      location,
-      title,
-    } = adminJobQueryDto;
+    const { page = 1, limit = 10, showDeleted, company, location, title } = dto;
 
     const qb = this.jobRepo
       .createQueryBuilder('job')
@@ -98,12 +91,12 @@ export class JobsService {
     return job;
   }
 
-  async create(createJobDto: CreateJobDto): Promise<Job> {
-    const newJob = this.jobRepo.create({ ...createJobDto });
+  async create(dto: CreateJobDto): Promise<Job> {
+    const newJob = this.jobRepo.create({ ...dto });
     return await this.jobRepo.save(newJob);
   }
 
-  async update(id: number, updateJobDto: UpdateJobDto): Promise<Job> {
+  async update(id: number, dto: UpdateJobDto): Promise<Job> {
     const job = await this.jobRepo.findOne({
       where: { id },
       withDeleted: true,
@@ -111,7 +104,7 @@ export class JobsService {
 
     if (!job) throw new NotFoundException('Job not found');
 
-    Object.assign(job, updateJobDto);
+    Object.assign(job, dto);
     const savedJob = await this.jobRepo.save(job);
 
     return savedJob;

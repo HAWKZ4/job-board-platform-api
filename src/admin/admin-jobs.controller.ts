@@ -31,9 +31,9 @@ export class AdminJobsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async getAllJobs(
-    @Query() adminJobQueryDto: AdminJobQueryDto,
+    @Query() query: AdminJobQueryDto,
   ): Promise<Pagination<AdminJobDto>> {
-    return this.jobsService.findAllByAdmin(adminJobQueryDto);
+    return this.jobsService.findAllByAdmin(query);
   }
 
   @Serialize(AdminJobDto)
@@ -50,8 +50,8 @@ export class AdminJobsController {
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
-  async createJob(@Body() createJobDto: CreateJobDto): Promise<AdminJobDto> {
-    return this.jobsService.create(createJobDto);
+  async createJob(@Body() dto: CreateJobDto): Promise<AdminJobDto> {
+    return this.jobsService.create(dto);
   }
 
   @Serialize(AdminJobDto)
@@ -60,9 +60,9 @@ export class AdminJobsController {
   @Patch('/:id')
   async updateJob(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateJobDto: UpdateJobDto,
+    @Body() dto: UpdateJobDto,
   ): Promise<AdminJobDto> {
-    const updatedJob = await this.jobsService.update(id, updateJobDto);
+    const updatedJob = await this.jobsService.update(id, dto);
     return updatedJob;
   }
 

@@ -47,9 +47,9 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async getAllUsers(
-    @Query() paginationQueryDto: PaginationQueryDto,
+    @Query() query: PaginationQueryDto,
   ): Promise<Pagination<UserDto>> {
-    return this.usersService.findAll(paginationQueryDto);
+    return this.usersService.findAll(query);
   }
 
   @Serialize(UserDto)
@@ -77,12 +77,12 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<SafeUserDto> {
+  async createUser(@Body() dto: CreateUserDto): Promise<SafeUserDto> {
     this.logger.log(
-      `Admin created user with email ${createUserDto.email}`,
+      `Admin created user with email ${dto.email}`,
       UsersController.name,
     );
-    return await this.usersService.create(createUserDto);
+    return await this.usersService.create(dto);
   }
 
   @Serialize(UserDto)
@@ -91,9 +91,9 @@ export class UsersController {
   @Patch('/:id')
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() dto: UpdateUserDto,
   ): Promise<UserDto> {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.update(id, dto);
   }
 
   @Roles(UserRole.ADMIN)

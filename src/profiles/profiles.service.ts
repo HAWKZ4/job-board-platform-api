@@ -27,33 +27,30 @@ export class ProfilesService {
     private readonly configService: ConfigService,
   ) {}
 
-  async update(id: number, updateProfileDto: UpdateProfileDto): Promise<User> {
-    return this.usersService.updateFromProfile(id, updateProfileDto);
+  async update(id: number, dto: UpdateProfileDto): Promise<User> {
+    return this.usersService.updateFromProfile(id, dto);
   }
 
-  async delete(id: number, deleteProfileDto: DeleteProfileDto): Promise<void> {
+  async delete(id: number, dto: DeleteProfileDto): Promise<void> {
     const user = await this.usersService.findOneById(id);
 
     if (!user) throw new NotFoundException('User not found');
 
-    const isMatch = await compare(deleteProfileDto.password, user.password);
+    const isMatch = await compare(dto.password, user.password);
 
     if (!isMatch) throw new UnauthorizedException('Invalid password');
 
     await this.usersService.delete(user.id, false);
   }
 
-  async changePassword(id: number, changePasswordDto: ChangePasswordDto) {
+  async changePassword(id: number, dto: ChangePasswordDto) {
     const user = await this.usersService.findOneById(id);
     if (!user) throw new NotFoundException('User not found');
-    const isMatch = await compare(
-      changePasswordDto.currentPassword,
-      user.password,
-    );
+    const isMatch = await compare(dto.currentPassword, user.password);
 
     if (!isMatch) throw new UnauthorizedException('Current password incorrect');
 
-    await this.usersService.changePassword(user, changePasswordDto);
+    await this.usersService.changePassword(user, dto);
   }
 
   async updateUserResumeUrl(userId: number, resumeUrl: string): Promise<void> {

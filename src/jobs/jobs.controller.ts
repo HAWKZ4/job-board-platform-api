@@ -11,9 +11,9 @@ export class JobsController {
 
   @Get()
   async getAllJobs(
-    @Query() paginationQueryDto: PaginationQueryDto,
+    @Query() query: PaginationQueryDto,
   ): Promise<Pagination<PublicJobDto>> {
-    return this.jobsService.findAllByUser(paginationQueryDto);
+    return this.jobsService.findAllByUser(query);
   }
 
   @Serialize(PublicJobDto)
@@ -21,6 +21,6 @@ export class JobsController {
   async getJobById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<PublicJobDto> {
-    return this.jobsService.findJobByIdForUser(id);
+    return this.jobsService.findOneForUser(id);
   }
 }

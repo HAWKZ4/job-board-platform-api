@@ -26,9 +26,9 @@ export class AuthService {
 
   private readonly logger = new MyLoggerService(AuthService.name);
 
-  async register(registerUserDto: RegisterUserDto): Promise<User> {
+  async register(dto: RegisterUserDto): Promise<User> {
     return await this.usersService.create({
-      ...registerUserDto,
+      ...dto,
       role: UserRole.USER,
     });
   }

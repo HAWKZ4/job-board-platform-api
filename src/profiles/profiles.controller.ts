@@ -46,9 +46,9 @@ export class ProfilesController {
   @Patch()
   async updateProfile(
     @CurrentUser() user: SafeUser,
-    @Body() updateProfileDto: UpdateProfileDto,
+    @Body() dto: UpdateProfileDto,
   ): Promise<ProfileDto> {
-    return this.profilesService.update(user.id, updateProfileDto);
+    return this.profilesService.update(user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -56,10 +56,10 @@ export class ProfilesController {
   @Delete()
   async deleteProfile(
     @CurrentUser() user: User,
-    @Body() deleteProfileDto: DeleteProfileDto,
+    @Body() dto: DeleteProfileDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.profilesService.delete(user.id, deleteProfileDto);
+    await this.profilesService.delete(user.id, dto);
     await this.authService.logout(response, user.id);
   }
 
@@ -67,9 +67,9 @@ export class ProfilesController {
   @Patch('/change-password')
   async changePassword(
     @CurrentUser() user: User,
-    @Body() changePasswordDto: ChangePasswordDto,
+    @Body() dto: ChangePasswordDto,
   ): Promise<void> {
-    return this.profilesService.changePassword(user.id, changePasswordDto);
+    return this.profilesService.changePassword(user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)

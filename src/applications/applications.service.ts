@@ -32,8 +32,8 @@ export class ApplicationsService {
   ) {}
 
   // User Methods
-  async create(createApplicationDto: CreateApplicationDto, safeUser: SafeUser) {
-    const { jobId, coverLetter } = createApplicationDto;
+  async create(dto: CreateApplicationDto, safeUser: SafeUser) {
+    const { jobId, coverLetter } = dto;
     const job = await this.jobRepo.findOne({
       where: { id: jobId },
     });
@@ -69,9 +69,9 @@ export class ApplicationsService {
     return this.appRepo.save(application);
   }
 
-  async findAllApplicationsForUser(
+  async findAllMine(
     user: SafeUser,
-    paginationQueryDto: PaginationQueryDto,
+    dto: PaginationQueryDto,
   ): Promise<Pagination<UserApplicationDto>> {
     const qb = this.appRepo
       .createQueryBuilder('application')
@@ -82,12 +82,12 @@ export class ApplicationsService {
 
     return paginateAndMap<Application, UserApplicationDto>(
       qb,
-      paginationQueryDto,
+      dto,
       UserApplicationDto,
     );
   }
 
-  async findOneApplicationForUser(id: number): Promise<Application> {
+  async findOneByUser(id: number): Promise<Application> {
     const application = await this.appRepo.findOne({
       where: { id },
       relations: ['job'],
@@ -114,9 +114,9 @@ export class ApplicationsService {
 
   // Admin Methods
   async findAllApplicationsForAdmin(
-    adminApplicationsQueryDto: AdminApplicationQueryDto,
+    dto: AdminApplicationQueryDto,
   ): Promise<Pagination<AdminApplicationDto>> {
-    const { jobId, userId } = adminApplicationsQueryDto;
+    const { jobId, userId } = dto;
 
     const qb = this.appRepo
       .createQueryBuilder('application')
@@ -136,33 +136,12 @@ export class ApplicationsService {
 
     return paginateAndMap<Application, AdminApplicationDto>(
       qb,
-      adminApplicationsQueryDto,
+      dto,
       AdminApplicationDto,
     );
-
-    // const page = paginationDto.page ?? 1;
-    // const limit = paginationDto.limit ?? 10;
-    // const where: any = {};
-    // if (jobId) where.job = { id: jobId };
-    // if (userId) where.user = { id: userId };
-    // const [applications, total] = await this.appRepo.findAndCount({
-    //   where,
-    //   skip: (page - 1) * limit,
-    //   take: limit,
-    //   order: { createdAt: 'DESC' },
-    //   relations: ['job', 'user'],
-    // });
-    // return {
-    //   data: applications,
-    //   meta: {
-    //     total,
-    //     page,
-    //     limit,
-    //   },
-    // };
   }
 
-  async getApplicationByAdmin(id: number): Promise<Application> {
+  async findOneByAdmin(id: number): Promise<Application> {
     const application = await this.appRepo.findOne({
       where: { id },
       relations: ['job', 'user'],
@@ -173,14 +152,14 @@ export class ApplicationsService {
     return application;
   }
 
-  async updateApplicationStatus(
+  async updateStatus(
     id: number,
-    updateApplicationStatusDto: UpdateApplicationStatusDto,
+    dto: UpdateApplicationStatusDto,
   ): Promise<Application> {
     const application = await this.appRepo.findOne({ where: { id } });
     if (!application) throw new NotFoundException('Application not found');
 
-    application.status = updateApplicationStatusDto.status;
+    application.status = dto.status;
     const savedApplication = await this.appRepo.save(application);
     return savedApplication;
   }

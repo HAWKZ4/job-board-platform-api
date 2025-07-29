@@ -19,19 +19,18 @@ import { UpdateApplicationStatusDto } from '../applications/dtos/update-applicat
 import { AdminApplicationQueryDto } from './dtos/admin-application-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
-@Controller('/admin/applications')
+@Controller('admin/applications')
 export class AdminApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async getAllApplicationcs(
-    @Query() adminApplicationsQueryDto: AdminApplicationQueryDto,
+    @Query() query: AdminApplicationQueryDto,
   ): Promise<Pagination<AdminApplicationDto>> {
-    return this.applicationsService.findAllApplicationsForAdmin(
-      adminApplicationsQueryDto,
-    );
+    return this.applicationsService.findAllApplicationsForAdmin(query);
   }
+
   @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -39,19 +38,17 @@ export class AdminApplicationsController {
   async getApplication(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<AdminApplicationDto> {
-    return this.applicationsService.getApplicationByAdmin(id);
+    return this.applicationsService.findOneByAdmin(id);
   }
+
   @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id')
   async updateApplicationStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateApplicationStatusDto: UpdateApplicationStatusDto,
+    @Body() dto: UpdateApplicationStatusDto,
   ): Promise<AdminApplicationDto> {
-    return this.applicationsService.updateApplicationStatus(
-      id,
-      updateApplicationStatusDto,
-    );
+    return this.applicationsService.updateStatus(id, dto);
   }
 }

@@ -24,7 +24,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
-  @Post('logout')
+  @Post('/logout')
   async logout(
     @Res({ passthrough: true }) response: Response,
     @CurrentUser() user: SafeUser,
@@ -35,7 +35,7 @@ export class AuthController {
   @UseGuards(LoginRequestTransformGuard())
   @SetResponseMessage('User logged in successfully')
   @HttpCode(200)
-  @Post('login')
+  @Post('/login')
   async login(
     @Res({ passthrough: true }) response: Response,
     @CurrentUser() user: SafeUser,
@@ -45,16 +45,14 @@ export class AuthController {
 
   @Serialize(SafeUserDto)
   @HttpCode(201)
-  @Post('register')
-  async register(
-    @Body() registerUserDto: RegisterUserDto,
-  ): Promise<SafeUserDto> {
-    return await this.authService.register(registerUserDto);
+  @Post('/register')
+  async register(@Body() dto: RegisterUserDto): Promise<SafeUserDto> {
+    return await this.authService.register(dto);
   }
 
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(200)
-  @Post('refresh')
+  @Post('/refresh')
   async refreshToken(
     @Res({ passthrough: true }) response: Response,
     @CurrentUser() user: SafeUser,

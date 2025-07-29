@@ -32,26 +32,23 @@ export class ApplicationsController {
   @Post()
   async applyToJob(
     @CurrentUser() user: SafeUser,
-    @Body() createApplicationDto: CreateApplicationDto,
+    @Body() dto: CreateApplicationDto,
   ) {
     this.logger.log(
-      `User ${user.id} is applying to Job ${createApplicationDto.jobId}`,
+      `User ${user.id} is applying to Job ${dto.jobId}`,
       ApplicationsService.name,
     );
 
-    return this.applicationsService.create(createApplicationDto, user);
+    return this.applicationsService.create(dto, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getMyApplications(
+  async getAllMyApplications(
     @CurrentUser() user: SafeUser,
-    @Query() paginationQueryDto: PaginationQueryDto,
+    @Query() query: PaginationQueryDto,
   ): Promise<Pagination<UserApplicationDto>> {
-    return this.applicationsService.findAllApplicationsForUser(
-      user,
-      paginationQueryDto,
-    );
+    return this.applicationsService.findAllMine(user, query);
   }
 
   @Serialize(UserApplicationDto)
@@ -60,7 +57,7 @@ export class ApplicationsController {
   async getApplication(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UserApplicationDto> {
-    return this.applicationsService.findOneApplicationForUser(id);
+    return this.applicationsService.findOneByUser(id);
   }
 
   @UseGuards(JwtAuthGuard)

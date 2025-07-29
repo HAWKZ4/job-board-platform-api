@@ -27,14 +27,12 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
-  async findAll(
-    paginationQueryDto: PaginationQueryDto,
-  ): Promise<Pagination<UserDto>> {
+  async findAll(dto: PaginationQueryDto): Promise<Pagination<UserDto>> {
     const qb = this.userRepo
       .createQueryBuilder('user')
       .orderBy('user.id', 'DESC');
 
-    return paginateAndMap<User, UserDto>(qb, paginationQueryDto, UserDto);
+    return paginateAndMap<User, UserDto>(qb, dto, UserDto);
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
@@ -49,16 +47,16 @@ export class UsersService {
     });
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.findOneByEmail(createUserDto.email);
+  async create(dto: CreateUserDto): Promise<User> {
+    const existingUser = await this.findOneByEmail(dto.email);
 
     if (existingUser) {
       throw new ConflictException('Email already exists');
     }
 
-    const hashedPassword = await hash(createUserDto.password, 10);
+    const hashedPassword = await hash(dto.password, 10);
     const user = this.userRepo.create({
-      ...createUserDto,
+      ...dto,
       password: hashedPassword,
     });
 
@@ -67,14 +65,14 @@ export class UsersService {
     return newUser;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: number, dto: UpdateUserDto): Promise<User> {
     const user = await this.findOneById(id);
     if (!user) throw new NotFoundException('User not found');
 
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      await this.validateEmail(updateUserDto.email, id);
+    if (dto.email && dto.email !== user.email) {
+      await this.validateEmail(dto.email, id);
     }
-    Object.assign(user, updateUserDto);
+    Object.assign(user, dto);
     const updatedUser = await this.userRepo.save(user);
 
     return updatedUser;
