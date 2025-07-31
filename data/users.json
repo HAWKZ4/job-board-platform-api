@@ -1,0 +1,112 @@
+[
+  {
+    "email": "test@test.com",
+    "password": "12345",
+    "firstName": "Shannon",
+    "lastName": "Pierce",
+    "location": "West Christopher",
+    "refreshToken": null,
+    "role": "admin",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "jonathanblankenship@willis-hamilton.com",
+    "password": "e@Sp)1VzBw",
+    "firstName": "Daniel",
+    "lastName": "Erickson",
+    "location": "Anthonybury",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "keith35@hotmail.com",
+    "password": "@3PUZEr*2z",
+    "firstName": "Gregory",
+    "lastName": "Moore",
+    "location": "South Karamouth",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "laurieklein@gmail.com",
+    "password": "*@u)IVhtU9",
+    "firstName": "Melissa",
+    "lastName": "Tapia",
+    "location": "Jenniferfort",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "richard82@howard.org",
+    "password": "(9Pbp0%l9E",
+    "firstName": "Sean",
+    "lastName": "Kelly",
+    "location": "Lake Jenniferbury",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "mle@hotmail.com",
+    "password": "#_54k&CevE",
+    "firstName": "Jermaine",
+    "lastName": "Martinez",
+    "location": "Amberton",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "matthewperez@yahoo.com",
+    "password": "QF48BPaQ$Q",
+    "firstName": "Thomas",
+    "lastName": "Johnson",
+    "location": "South David",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "jennifer47@hotmail.com",
+    "password": "$APkt4zF4u",
+    "firstName": "Richard",
+    "lastName": "Jones",
+    "location": "Robertburgh",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "wrightkevin@gmail.com",
+    "password": "(P#9V%Kfp#",
+    "firstName": "Dana",
+    "lastName": "Price",
+    "location": "East Paulshire",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  },
+  {
+    "email": "dayjessica@davis.com",
+    "password": "M&M0Tfzp&i",
+    "firstName": "Mary",
+    "lastName": "Wright",
+    "location": "Lake Jennifer",
+    "refreshToken": null,
+    "role": "user",
+    "resumeUrl": null,
+    "deletedAt": null
+  }
+]
