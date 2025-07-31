@@ -1,80 +1,54 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from './users/entities/user.entity';
+import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JobsModule } from './jobs/jobs.module';
 import { ApplicationsModule } from './applications/applications.module';
-import { Application } from './applications/entities/application.entity';
-import { Job } from './jobs/entites/job.entity';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { MyLoggerModule } from './my-logger/my-logger.module';
 import { AdminModule } from './admin/admin.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // makes it available everywhere
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'short',
+          ttl: 1000, // 1sec
+          limit: 3, // 3req
+        },
+        {
+          name: 'medium',
+          ttl: 10000,
+          limit: 20,
+        },
+        {
+          name: 'long',
+          ttl: 60000,
+          limit: 100,
+        },
+      ],
+    }),
     UsersModule,
     AuthModule,
     ProfilesModule,
     JobsModule,
     ApplicationsModule,
-    ConfigModule.forRoot({
-      isGlobal: true, // makes it available everywhere
-    }),
-
-    TypeOrmModule.forRootAsync({
-      imports: [
-        ConfigModule,
-        ThrottlerModule.forRoot({
-          throttlers: [
-            {
-              name: 'short',
-              ttl: 1000, // 1sec
-              limit: 3, // 3req
-            },
-            {
-              name: 'medium',
-              ttl: 10000,
-              limit: 20,
-            },
-            {
-              name: 'long',
-              ttl: 60000,
-              limit: 100,
-            },
-          ],
-        }),
-      ],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
-        port: parseInt(configService.get('DATABASE_PORT') || '5432', 10),
-        username: configService.get('DATABASE_USER'),
-        password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get('DATABASE_NAME'),
-        entities: [User, Application, Job], // include ALL entities used in relations
-        autoLoadEntities: true,
-        synchronize: configService.getOrThrow('NODE_ENV') === 'development',
-      }),
-    }),
-
     AuthModule,
-
     ProfilesModule,
-
     JobsModule,
-
     ApplicationsModule,
-
     MyLoggerModule,
-
     AdminModule,
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
