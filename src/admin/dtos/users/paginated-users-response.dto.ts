@@ -27,7 +27,7 @@ class MetaDto {
   currentPage: number;
 }
 
-export class PaginatedUserResponseDto {
+export class PaginatedUsersResponseDto {
   @ApiProperty({ type: [UserDto] })
   data: UserDto[];
 

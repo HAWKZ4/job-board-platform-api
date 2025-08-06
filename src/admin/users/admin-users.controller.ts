@@ -33,7 +33,7 @@ import { SafeUserResponseDto } from 'src/common/dtos/user/safe-user-response.dto
 import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { PaginatedUserResponseDto } from 'src/admin/dtos/users/paginated-user-response.dto';
+import { PaginatedUsersResponseDto } from 'src/admin/dtos/users/paginated-users-response.dto';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { UsersService } from 'src/users/users.service';
 
@@ -45,7 +45,7 @@ export class AdminUsersController {
   @ApiOperation({ summary: 'Get all users (admin only)' })
   @ApiOkResponse({
     description: 'List of users fetched successfully with pagination metadata',
-    type: PaginatedUserResponseDto,
+    type: PaginatedUsersResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
