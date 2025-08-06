@@ -29,7 +29,7 @@ import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { UpdateUserResponseDto } from 'src/admin/dtos/users/update-user-response.dto';
 import { CreateUserDto } from 'src/admin/dtos/users/create-user.dto';
 import { SafeUserDto } from 'src/common/dtos/user/safe-user.dto';
-import { SafeUserResponseDto } from 'src/admin/dtos/users/safe-user-response.dto';
+import { SafeUserResponseDto } from 'src/common/dtos/user/safe-user-response.dto';
 import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';

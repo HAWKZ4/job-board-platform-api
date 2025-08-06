@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SafeUserDto } from '../../../common/dtos/user/safe-user.dto';
+import { SafeUserDto } from './safe-user.dto';
 
 export class SafeUserResponseDto {
   @ApiProperty({ example: 200, description: 'HTTP status code' })
