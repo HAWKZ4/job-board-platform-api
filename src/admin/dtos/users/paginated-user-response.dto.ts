@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserDto } from '../user.dto';
+import { UserDto } from '../../../common/dtos/user/user.dto';
 
 class MetaDto {
   @ApiProperty({ example: 100, description: 'Total number of items available' })

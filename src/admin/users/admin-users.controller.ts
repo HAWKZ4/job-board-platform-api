@@ -12,63 +12,35 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { UserDto } from './dtos/user.dto';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SafeUserDto } from './dtos/safe-user.dto';
-import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { MyLoggerService } from 'src/my-logger/my-logger.service';
-import { Pagination } from 'nestjs-typeorm-paginate';
-import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 import {
   ApiForbiddenResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PaginatedUserResponseDto } from './dtos/responses/paginated-user-response.dto';
-import { SingleUserResponseDto } from './dtos/responses/single-user-response.dto';
-import { RestoreDeletedUserResponseDto } from './dtos/responses/restore-deleted-user-response.dto';
-import { UpdateUserResponseDto } from './dtos/responses/update-user-response.dto';
-import { SafeUserResponseDto } from './dtos/responses/safe-user-response.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RestoreDeletedUserResponseDto } from 'src/admin/dtos/users/restore-deleted-user-response.dto';
+import { UserDto } from 'src/common/dtos/user/user.dto';
+import { UpdateUserDto } from 'src/admin/dtos/users/update-user.dto';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
+import { UpdateUserResponseDto } from 'src/admin/dtos/users/update-user-response.dto';
+import { CreateUserDto } from 'src/admin/dtos/users/create-user.dto';
+import { SafeUserDto } from 'src/common/dtos/user/safe-user.dto';
+import { SafeUserResponseDto } from 'src/admin/dtos/users/safe-user-response.dto';
+import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
+import { PaginatedUserResponseDto } from 'src/admin/dtos/users/paginated-user-response.dto';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { UsersService } from 'src/users/users.service';
 
-@Controller('users')
-export class UsersController {
+@Controller('admin/users')
+export class AdminUsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  private readonly logger = new MyLoggerService(UsersController.name);
-
-  @ApiOperation({ summary: 'Get the currently authenticated user' })
-  @ApiOkResponse({
-    description: 'Authenticated user retrieved successfully',
-    type: SingleUserResponseDto,
-  })
-  @ApiUnauthorizedResponse({
-    description: 'You are not authenticated. Please login first.',
-  })
-  @ApiNotFoundResponse({
-    description: 'User not found',
-  })
-  @Serialize(UserDto)
-  @UseGuards(JwtAuthGuard)
-  @Get('/me')
-  async getMe(
-    @CurrentUser() user: SafeUser,
-    @Req() req: any,
-  ): Promise<UserDto> {
-    const exisitingUser = await this.usersService.findOneById(user.id);
-    if (!exisitingUser) throw new NotFoundException('User not found');
-    req.customMessage = 'Authenticated user retrieved successfully';
-    return exisitingUser;
-  }
+  private readonly logger = new MyLoggerService(AdminUsersController.name);
 
   @ApiOperation({ summary: 'Get all users (admin only)' })
   @ApiOkResponse({
@@ -164,7 +136,7 @@ export class UsersController {
   ): Promise<SafeUserDto> {
     this.logger.log(
       `Admin created user with email ${dto.email}`,
-      UsersController.name,
+      AdminUsersController.name,
     );
     req.customMessage = 'User created successfully';
     return await this.usersService.create(dto);
@@ -238,7 +210,7 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/restore/:id')
-  async restoreJob(
+  async restoreUser(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: any,
   ): Promise<void> {

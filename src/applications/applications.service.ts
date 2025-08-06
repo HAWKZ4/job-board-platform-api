@@ -12,12 +12,12 @@ import { Job } from 'src/jobs/entites/job.entity';
 import { CreateApplicationDto } from './dtos/create-application.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { User } from 'src/users/entities/user.entity';
-import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { UserApplicationDto } from './dtos/user-application.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
-import { AdminApplicationQueryDto } from '../admin/dtos/admin-application-query.dto';
-import { AdminApplicationDto } from '../admin/dtos/admin-application.dto';
+import { AdminApplicationQueryDto } from '../admin/dtos/applications/admin-application-query.dto';
+import { AdminApplicationDto } from '../admin/dtos/applications/admin-application.dto';
 
 @Injectable()
 export class ApplicationsService {

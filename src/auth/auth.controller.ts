@@ -14,8 +14,7 @@ import { RegisterUserDto } from './dtos/register-user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { LoginRequestTransformGuard } from './guards/login-request-trasnform.guard';
-import { SetResponseMessage } from 'src/common/decorators/set-response-message.decorator';
-import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
+import { SafeUserDto } from 'src/common/dtos/user/safe-user.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 
 @Controller('auth')
@@ -33,7 +32,6 @@ export class AuthController {
   }
 
   @UseGuards(LoginRequestTransformGuard())
-  @SetResponseMessage('User logged in successfully')
   @HttpCode(200)
   @Post('/login')
   async login(

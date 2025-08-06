@@ -25,10 +25,10 @@ async function bootstrap() {
     )
     .setVersion('1.0.0')
     .addTag('Auth', 'Authentication and authorization endpoints')
-    .addTag('Users', 'User management and roles')
     .addTag('Jobs', 'Job creation and listing')
     .addTag('Profiles', 'User profile and resumes')
     .addTag('Applications', 'Applications management')
+    .addTag('AdminUsers', 'User management and roles')
     .addTag('AdminApplications', 'Applications management')
     .addTag('AdminJobs', 'Jobs management')
     .build();

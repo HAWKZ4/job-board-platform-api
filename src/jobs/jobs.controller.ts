@@ -2,7 +2,7 @@ import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { PublicJobDto } from './dtos/public-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('jobs')

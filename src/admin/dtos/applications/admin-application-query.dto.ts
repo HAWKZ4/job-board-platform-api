@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
-import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 
 export class AdminApplicationQueryDto extends PaginationQueryDto {
   @IsOptional()

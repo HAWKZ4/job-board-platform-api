@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SafeUserDto } from '../safe-user.dto';
+import { SafeUserDto } from '../../../common/dtos/user/safe-user.dto';
 
 export class UpdateUserResponseDto {
   @ApiProperty({

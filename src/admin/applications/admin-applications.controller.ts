@@ -8,15 +8,15 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApplicationsService } from '../applications/applications.service';
+import { ApplicationsService } from '../../applications/applications.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { AdminApplicationDto } from './dtos/admin-application.dto';
+import { AdminApplicationDto } from '../dtos/applications/admin-application.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { UpdateApplicationStatusDto } from '../applications/dtos/update-application-status.dto';
-import { AdminApplicationQueryDto } from './dtos/admin-application-query.dto';
+import { UpdateApplicationStatusDto } from '../../applications/dtos/update-application-status.dto';
+import { AdminApplicationQueryDto } from '../dtos/applications/admin-application-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('admin/applications')

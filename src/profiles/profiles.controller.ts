@@ -1,3 +1,4 @@
+import { UsersService } from 'src/users/users.service';
 import {
   BadRequestException,
   Body,
@@ -6,9 +7,11 @@ import {
   Get,
   HttpCode,
   InternalServerErrorException,
+  NotFoundException,
   Param,
   Patch,
   Post,
+  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -31,15 +34,48 @@ import { RESUME_UPLOADS_DIR } from '../common/constatns/file-paths';
 import { fileNameEditor, pdfFileFilter } from '../common/utils/file.utils';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { UserDto } from 'src/common/dtos/user/user.dto';
+import {
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
 
 @Controller('profiles')
 export class ProfilesController {
   constructor(
     private readonly profilesService: ProfilesService,
     private readonly authService: AuthService,
+    private readonly usersService: UsersService,
   ) {}
 
   private readonly logger = new MyLoggerService(ProfilesController.name);
+
+  @ApiOperation({ summary: 'Get the currently authenticated user' })
+  @ApiOkResponse({
+    description: 'Authenticated user retrieved successfully',
+    type: SingleUserResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You are not authenticated. Please login first.',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+  })
+  @Serialize(UserDto)
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async getMe(
+    @CurrentUser() user: SafeUser,
+    @Req() req: any,
+  ): Promise<UserDto> {
+    const exisitingUser = await this.usersService.findOneById(user.id);
+    if (!exisitingUser) throw new NotFoundException('User not found');
+    req.customMessage = 'Authenticated user retrieved successfully';
+    return exisitingUser;
+  }
 
   @Serialize(ProfileDto)
   @UseGuards(JwtAuthGuard)

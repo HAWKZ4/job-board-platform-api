@@ -11,17 +11,17 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { JobsService } from '../jobs/jobs.service';
-import { CreateJobDto } from '../jobs/dtos/create-job.dto';
+import { JobsService } from '../../jobs/jobs.service';
+import { CreateJobDto } from '../../jobs/dtos/create-job.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { AdminJobDto } from './dtos/admin-job.dto';
-import { UpdateJobDto } from '../jobs/dtos/update-jobs.dto';
+import { AdminJobDto } from './../dtos/jobs/admin-job.dto';
+import { UpdateJobDto } from '../../jobs/dtos/update-jobs.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { AdminJobQueryDto } from './dtos/admin-job-query.dto';
+import { AdminJobQueryDto } from './../dtos/jobs/admin-job-query.dto';
 
 @Controller('admin/jobs')
 export class AdminJobsController {

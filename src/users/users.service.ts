@@ -1,4 +1,4 @@
-import { PaginationQueryDto } from './../common/dtos/pagination-query.dto';
+import { PaginationQueryDto } from '../common/dtos/pagination/pagination-query.dto';
 import {
   ConflictException,
   Injectable,
@@ -7,8 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { CreateUserDto } from '../admin/dtos/users/create-user.dto';
+import { UpdateUserDto } from '../admin/dtos/users/update-user.dto';
 import { hash } from 'bcryptjs';
 import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
 import { UpdateProfileDto } from 'src/profiles/dtos/update-profile.dto';
@@ -18,7 +18,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { RESUME_UPLOADS_DIR } from 'src/common/constatns/file-paths';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { UserDto } from './dtos/user.dto';
+import { UserDto } from '../common/dtos/user/user.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
 
 @Injectable()

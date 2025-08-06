@@ -18,7 +18,7 @@ import { CreateApplicationDto } from './dtos/create-application.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { UserApplicationDto } from './dtos/user-application.dto';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
-import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller('applications')
