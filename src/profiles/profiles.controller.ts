@@ -5,7 +5,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
   InternalServerErrorException,
   NotFoundException,
   Param,
@@ -36,12 +35,19 @@ import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { UserDto } from 'src/common/dtos/user/user.dto';
 import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
+import { ProfileResponseDto } from './dtos/profile-response.dto';
+import { UploadResumeDto } from './dtos/upload-resume.dto';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -77,37 +83,105 @@ export class ProfilesController {
     return exisitingUser;
   }
 
+  @ApiOperation({ summary: 'Update my profile' })
+  @ApiOkResponse({
+    description: 'Profile updated successfully',
+    type: ProfileResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You are not authenticated. Please login first.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Profile not found',
+  })
   @Serialize(ProfileDto)
   @UseGuards(JwtAuthGuard)
   @Patch()
   async updateProfile(
     @CurrentUser() user: SafeUser,
     @Body() dto: UpdateProfileDto,
+    @Req() req: any,
   ): Promise<ProfileDto> {
-    return this.profilesService.update(user.id, dto);
+    const updatedProfile = this.profilesService.update(user.id, dto);
+    req.customMessage = 'Profile updated successfully';
+    return updatedProfile;
   }
 
+  @ApiOperation({ summary: 'Delete my profile' })
+  @ApiOkResponse({
+    description: 'Profile deleted successfully',
+    example: {
+      statusCode: 200,
+      message: 'Profile deleted successfully',
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You are not authenticated or Your password is invalid.',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+  })
   @UseGuards(JwtAuthGuard)
-  @HttpCode(204)
   @Delete()
   async deleteProfile(
     @CurrentUser() user: User,
     @Body() dto: DeleteProfileDto,
     @Res({ passthrough: true }) response: Response,
+    @Req() req: any,
   ): Promise<void> {
     await this.profilesService.delete(user.id, dto);
     await this.authService.logout(response, user.id);
+    req.customMessage = 'Profile deleted successfully';
   }
 
+  @ApiOperation({ summary: 'Update my password' })
+  @ApiOkResponse({
+    description: 'Password updated successfully',
+    example: {
+      statusCode: 200,
+      message: 'Password updated successfully',
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'You are not authenticated or Your current password is invalid.',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+  })
   @UseGuards(JwtAuthGuard)
   @Patch('/change-password')
   async changePassword(
     @CurrentUser() user: User,
     @Body() dto: ChangePasswordDto,
+    @Req() req: any,
   ): Promise<void> {
-    return this.profilesService.changePassword(user.id, dto);
+    await this.profilesService.changePassword(user.id, dto);
+    req.customMessage = 'Password updated successfully';
   }
 
+  @ApiOperation({ summary: 'Upload or replace user resume (PDF only)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'PDF file to upload (max 5MB)',
+    type: UploadResumeDto,
+  })
+  @ApiOkResponse({
+    description:
+      'Resume uploaded successfully (existing resume will be replaced if exists)',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'Resume uploaded successfully',
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'No file uploaded or file is not a valid PDF',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You are not authenticated. Please login first.',
+  })
   @UseGuards(JwtAuthGuard)
   @Post('/upload-resume')
   @UseInterceptors(
@@ -126,6 +200,7 @@ export class ProfilesController {
   async uploadResume(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: SafeUser,
+    @Req() req: any,
   ): Promise<void> {
     if (!file) throw new BadRequestException('No file uploaded');
 
@@ -137,8 +212,35 @@ export class ProfilesController {
     );
 
     await this.profilesService.updateUserResumeUrl(user.id, relativeResumePath);
+    req.customMessage = 'Resume uploaded successfully';
   }
 
+  @ApiOperation({
+    summary: 'Serve resume PDF by filename for the authenticated user',
+  })
+  @ApiParam({
+    name: 'filename',
+    description: 'The filename of the resume to retrieve',
+    example: 'resume_123.pdf',
+  })
+  @ApiOkResponse({
+    description: 'PDF resume file served successfully',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'You are not authenticated. Please login first.',
+  })
+  @ApiNotFoundResponse({ description: 'Resume not found or access denied' })
+  @ApiInternalServerErrorResponse({
+    description: 'File delivery failed due to server error',
+  })
   @UseGuards(JwtAuthGuard)
   @Get('/resumes/:filename')
   async serveResume(
