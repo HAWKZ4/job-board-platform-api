@@ -26,6 +26,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { PaginatedAdminApplicationsResponseDto } from '../dtos/applications/paginated-admin-applications-response';
+import { AdminApplicationResponseDto } from '../dtos/applications/admin-application-response.dto';
 
 @Controller('admin/applications')
 export class AdminApplicationsController {
@@ -59,7 +60,7 @@ export class AdminApplicationsController {
   @ApiOperation({ summary: 'Get an application by ID (admin only)' })
   @ApiOkResponse({
     description: 'Application with the specified ID was retrieved successfully',
-    type: AdminApplicationDto,
+    type: AdminApplicationResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -87,7 +88,7 @@ export class AdminApplicationsController {
     description: 'Application status updated successfully',
     example: {
       statusCode: 200,
-      message: 'Application updated successfully',
+      message: 'Application status updated successfully',
     },
   })
   @ApiUnauthorizedResponse({
