@@ -1,8 +1,8 @@
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { PublicJobDto } from '../../../jobs/dtos/public-job.dto';
+import { UserJobDto } from '../../../jobs/dtos/user-job.dto';
 
-export class AdminJobDto extends PublicJobDto {
+export class AdminJobDto extends UserJobDto {
   @ApiProperty({ example: true })
   @Expose()
   isPublished: boolean;

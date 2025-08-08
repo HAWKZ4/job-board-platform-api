@@ -7,7 +7,7 @@ import { UpdateJobDto } from './dtos/update-job.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminJobDto } from '../admin/dtos/jobs/admin-job.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
-import { PublicJobDto } from './dtos/public-job.dto';
+import { UserJobDto } from './dtos/user-job.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { AdminJobQueryDto } from '../admin/dtos/jobs/admin-job-query.dto';
 
@@ -20,7 +20,7 @@ export class JobsService {
   // User-Methods
   async findAllByUser(
     dto: PaginationQueryDto,
-  ): Promise<Pagination<PublicJobDto>> {
+  ): Promise<Pagination<UserJobDto>> {
     const { page = 1, limit = 10 } = dto;
 
     const qb = this.jobRepo
@@ -28,7 +28,7 @@ export class JobsService {
       .where('job.deletedAt IS NULL')
       .orderBy('job.createdAt', 'DESC');
 
-    return paginateAndMap<Job, PublicJobDto>(
+    return paginateAndMap<Job, UserJobDto>(
       qb,
       {
         page,

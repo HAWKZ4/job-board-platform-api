@@ -2,7 +2,7 @@ import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { JobType } from '../enums/job-type.enum';
 
-export class PublicJobDto {
+export class UserJobDto {
   @ApiProperty({ example: 1 })
   @Expose()
   id: number;
