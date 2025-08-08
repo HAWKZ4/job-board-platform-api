@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from './entites/job.entity';
 import { IsNull, Repository } from 'typeorm';
 import { CreateJobDto } from './dtos/create-job.dto';
-import { UpdateJobDto } from './dtos/update-jobs.dto';
+import { UpdateJobDto } from './dtos/update-job.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminJobDto } from '../admin/dtos/jobs/admin-job.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
