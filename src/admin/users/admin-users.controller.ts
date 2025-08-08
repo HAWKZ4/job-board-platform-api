@@ -19,6 +19,7 @@ import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -37,6 +38,7 @@ import { PaginatedUsersResponseDto } from 'src/admin/dtos/users/paginated-users-
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { UsersService } from 'src/users/users.service';
 
+@ApiTags("Admin Users")
 @Controller('admin/users')
 export class AdminUsersController {
   constructor(private readonly usersService: UsersService) {}

@@ -23,11 +23,13 @@ import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { PaginatedAdminApplicationsResponseDto } from '../dtos/applications/paginated-admin-applications-response';
 import { AdminApplicationResponseDto } from '../dtos/applications/admin-application-response.dto';
 
+@ApiTags('Admin Applications')
 @Controller('admin/applications')
 export class AdminApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
@@ -52,7 +54,7 @@ export class AdminApplicationsController {
     @Req() req: any,
   ): Promise<Pagination<AdminApplicationDto>> {
     const applications =
-      this.applicationsService.findAllApplicationsForAdmin(query);
+      await this.applicationsService.findAllApplicationsForAdmin(query);
     req.customMessage = 'Applications fetched successfully';
     return applications;
   }
@@ -76,7 +78,7 @@ export class AdminApplicationsController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: any,
   ): Promise<AdminApplicationDto> {
-    const application = this.applicationsService.findOneByAdmin(id);
+    const application = await this.applicationsService.findOneByAdmin(id);
     req.customMessage = 'Application retrieved successfully';
     return application;
   }
@@ -106,7 +108,10 @@ export class AdminApplicationsController {
     @Body() dto: UpdateApplicationStatusDto,
     @Req() req: any,
   ): Promise<AdminApplicationDto> {
-    const updatedApplication = this.applicationsService.updateStatus(id, dto);
+    const updatedApplication = await this.applicationsService.updateStatus(
+      id,
+      dto,
+    );
     req.customMessage = 'Application updated successfully';
     return updatedApplication;
   }

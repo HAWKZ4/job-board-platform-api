@@ -22,12 +22,14 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { LogoutUserResponseDto } from './dtos/logout-user-response.dto';
 import { LoginUserResponseDto } from './dtos/login-user-response.dto';
 import { SafeUserResponseDto } from 'src/common/dtos/user/safe-user-response.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

@@ -24,13 +24,6 @@ async function bootstrap() {
       'API documentation for the Job Board Platform. This platform connects job seekers and employers with role-based access.',
     )
     .setVersion('1.0.0')
-    .addTag('Auth', 'Authentication and authorization endpoints')
-    .addTag('Jobs', 'Job creation and listing')
-    .addTag('Profiles', 'User profile and resumes')
-    .addTag('Applications', 'Applications management')
-    .addTag('AdminUsers', 'User management and roles')
-    .addTag('AdminApplications', 'Applications management')
-    .addTag('AdminJobs', 'Jobs management')
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

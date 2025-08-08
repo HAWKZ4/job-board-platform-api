@@ -24,11 +24,13 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserApplicationResponseDto } from './dtos/user-application-response.dto';
 import { PaginatedUserApplicationsResponseDto } from './dtos/paginated-user-applications-response.dto';
 
+@ApiTags('Applications')
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}

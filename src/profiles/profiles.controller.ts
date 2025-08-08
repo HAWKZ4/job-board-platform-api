@@ -43,12 +43,14 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
 import { ProfileResponseDto } from './dtos/profile-response.dto';
 import { UploadResumeDto } from './dtos/upload-resume.dto';
 
+@ApiTags('Profiles')
 @Controller('profiles')
 export class ProfilesController {
   constructor(
