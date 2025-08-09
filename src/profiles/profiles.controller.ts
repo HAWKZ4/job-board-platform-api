@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   InternalServerErrorException,
   Param,
   Patch,
@@ -117,10 +118,6 @@ export class ProfilesController {
   })
   @ApiOkResponse({
     description: 'Profile deleted successfully',
-    example: {
-      statusCode: 200,
-      message: 'Profile deleted successfully',
-    },
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated or Your password is invalid.',
@@ -129,16 +126,15 @@ export class ProfilesController {
     description: 'Profile not found',
   })
   @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
   @Delete()
   async deleteProfile(
     @CurrentUser() user: User,
     @Body() dto: DeleteProfileDto,
     @Res({ passthrough: true }) response: Response,
-    @Req() req: any,
   ): Promise<void> {
     await this.profilesService.delete(user.id, dto);
     await this.authService.logout(response, user.id);
-    req.customMessage = 'Profile deleted successfully';
   }
 
   @ApiOperation({ summary: 'Update my password' })

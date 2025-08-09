@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -25,7 +26,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { RestoreDeletedUserResponseDto } from 'src/admin/dtos/users/restore-deleted-user-response.dto';
 import { UserDto } from 'src/common/dtos/user/user.dto';
 import { UpdateUserDto } from 'src/admin/dtos/users/update-user.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
@@ -189,7 +189,6 @@ export class AdminUsersController {
   @ApiOkResponse({
     description:
       'User was deleted successfully (soft or hard depending on query param)',
-    type: RestoreDeletedUserResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -202,17 +201,14 @@ export class AdminUsersController {
   })
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(204)
   @Delete('/:id')
   async deleteUser(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
     @Query() force?: 'true' | 'false',
   ): Promise<void> {
     const isForceDelete = force === 'true';
     await this.usersService.delete(id, isForceDelete);
-    req.customMessage = isForceDelete
-      ? 'User force deleted successfully'
-      : 'User soft deleted successfully';
   }
 
   @ApiOperation({
@@ -220,7 +216,6 @@ export class AdminUsersController {
   })
   @ApiOkResponse({
     description: 'User restored successfully',
-    type: RestoreDeletedUserResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -234,11 +229,7 @@ export class AdminUsersController {
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/restore/:id')
-  async restoreUser(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
-  ): Promise<void> {
+  async restoreUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.usersService.restore(id);
-    req.customMessage = 'User restored successfully';
   }
 }

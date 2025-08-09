@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Patch,
@@ -152,10 +153,6 @@ export class AdminJobsController {
   @ApiOkResponse({
     description:
       'Job was deleted successfully (soft or hard depending on query param)',
-    example: {
-      statusCode: 200,
-      message: 'Job hard/soft deleted successfully',
-    },
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -168,17 +165,14 @@ export class AdminJobsController {
   })
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(204)
   @Delete('/:id')
   async deleteJob(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
     @Query('force') force?: 'true' | 'false',
   ): Promise<void> {
     const isForceDelete = force === 'true';
     await this.jobsService.delete(id, isForceDelete);
-    req.customMessage = isForceDelete
-      ? 'Job force deleted successfully'
-      : 'Job soft deleted successfully';
   }
 
   @ApiOperation({

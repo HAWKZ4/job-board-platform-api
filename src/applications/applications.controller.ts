@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -116,10 +117,6 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Delete an Application by ID' })
   @ApiOkResponse({
     description: 'Application withdrawn successfully',
-    example: {
-      statusCode: 200,
-      message: 'Application withdrawn successfully',
-    },
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -128,6 +125,7 @@ export class ApplicationsController {
     description: 'Application not found',
   })
   @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
   @Delete('/:id/withdraw')
   async withdrawApplication(
     @CurrentUser() user: SafeUser,
@@ -135,6 +133,5 @@ export class ApplicationsController {
     @Req() req: any,
   ): Promise<void> {
     await this.applicationsService.withdraw(id, user);
-    req.customMessage = 'Application withdrawn successfully';
   }
 }
