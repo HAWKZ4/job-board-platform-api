@@ -17,8 +17,10 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import {
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -78,6 +80,9 @@ export class AdminUsersController {
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
   })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+  })
   @Serialize(UserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -101,6 +106,9 @@ export class AdminUsersController {
   })
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
   })
   @Serialize(UserDto)
   @Roles(UserRole.ADMIN)
@@ -154,6 +162,9 @@ export class AdminUsersController {
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
   })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+  })
   @Serialize(UserDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -169,6 +180,12 @@ export class AdminUsersController {
   }
 
   @ApiOperation({ summary: 'Delete a user by ID (soft or hard delete)' })
+  @ApiQuery({
+    name: 'force',
+    required: false,
+    enum: ['true', 'false'],
+    description: 'Set to true to force delete the user (hard delete)',
+  })
   @ApiOkResponse({
     description:
       'User was deleted successfully (soft or hard depending on query param)',
@@ -179,6 +196,9 @@ export class AdminUsersController {
   })
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
   })
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -207,6 +227,9 @@ export class AdminUsersController {
   })
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
   })
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)

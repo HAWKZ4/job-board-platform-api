@@ -6,7 +6,6 @@ import {
   Delete,
   Get,
   InternalServerErrorException,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -43,6 +42,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -109,6 +109,12 @@ export class ProfilesController {
   }
 
   @ApiOperation({ summary: 'Delete my profile' })
+  @ApiQuery({
+    name: 'force',
+    required: false,
+    enum: ['true', 'false'],
+    description: 'Set to true to force delete the job (hard delete)',
+  })
   @ApiOkResponse({
     description: 'Profile deleted successfully',
     example: {
@@ -120,7 +126,7 @@ export class ProfilesController {
     description: 'You are not authenticated or Your password is invalid.',
   })
   @ApiNotFoundResponse({
-    description: 'User not found',
+    description: 'Profile not found',
   })
   @UseGuards(JwtAuthGuard)
   @Delete()
@@ -238,10 +244,10 @@ export class ProfilesController {
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
   })
-  @ApiNotFoundResponse({ description: 'Resume not found or access denied' })
   @ApiInternalServerErrorResponse({
     description: 'File delivery failed due to server error',
   })
+  @ApiNotFoundResponse({ description: 'Resume not found or access denied' })
   @UseGuards(JwtAuthGuard)
   @Get('/resumes/:filename')
   async serveResume(

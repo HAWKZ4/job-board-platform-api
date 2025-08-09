@@ -21,6 +21,7 @@ import { AdminApplicationQueryDto } from '../dtos/applications/admin-application
 import { Pagination } from 'nestjs-typeorm-paginate';
 import {
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -70,6 +71,9 @@ export class AdminApplicationsController {
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
   })
+  @ApiNotFoundResponse({
+    description: 'Application not found',
+  })
   @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -98,6 +102,9 @@ export class AdminApplicationsController {
   })
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Application not found',
   })
   @Serialize(AdminApplicationDto)
   @Roles(UserRole.ADMIN)

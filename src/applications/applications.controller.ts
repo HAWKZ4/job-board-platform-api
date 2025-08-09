@@ -124,6 +124,9 @@ export class ApplicationsController {
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
   })
+  @ApiNotFoundResponse({
+    description: 'Application not found',
+  })
   @UseGuards(JwtAuthGuard)
   @Delete('/:id/withdraw')
   async withdrawApplication(
