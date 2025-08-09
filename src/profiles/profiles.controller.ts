@@ -80,7 +80,6 @@ export class ProfilesController {
     @Req() req: any,
   ): Promise<UserDto> {
     const exisitingUser = await this.usersService.findOneById(user.id);
-    if (!exisitingUser) throw new NotFoundException('User not found');
     req.customMessage = 'Authenticated user retrieved successfully';
     return exisitingUser;
   }
@@ -104,7 +103,7 @@ export class ProfilesController {
     @Body() dto: UpdateProfileDto,
     @Req() req: any,
   ): Promise<ProfileDto> {
-    const updatedProfile = this.profilesService.update(user.id, dto);
+    const updatedProfile = await this.profilesService.update(user.id, dto);
     req.customMessage = 'Profile updated successfully';
     return updatedProfile;
   }

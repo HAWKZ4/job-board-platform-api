@@ -61,7 +61,7 @@ export class ApplicationsController {
       ApplicationsService.name,
     );
 
-    const createdApplication = this.applicationsService.create(dto, user);
+    const createdApplication = await this.applicationsService.create(dto, user);
     req.customMessage = 'Application created successfully';
     return createdApplication;
   }
@@ -82,7 +82,10 @@ export class ApplicationsController {
     @Query() query: PaginationQueryDto,
     @Req() req: any,
   ): Promise<Pagination<UserApplicationDto>> {
-    const myApplications = this.applicationsService.findAllMine(user, query);
+    const myApplications = await this.applicationsService.findAllMine(
+      user,
+      query,
+    );
     req.customMessage = 'Applications retrieved successfully';
     return myApplications;
   }
@@ -105,7 +108,7 @@ export class ApplicationsController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: any,
   ): Promise<UserApplicationDto> {
-    const application = this.applicationsService.findOneByUser(id);
+    const application = await this.applicationsService.findOneByUser(id);
     req.customMessage = 'Application retrieved successfully';
     return application;
   }

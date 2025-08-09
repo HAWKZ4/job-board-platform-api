@@ -38,7 +38,7 @@ import { PaginatedUsersResponseDto } from 'src/admin/dtos/users/paginated-users-
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { UsersService } from 'src/users/users.service';
 
-@ApiTags("Admin Users")
+@ApiTags('Admin Users')
 @Controller('admin/users')
 export class AdminUsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -62,7 +62,7 @@ export class AdminUsersController {
     @Query() query: PaginationQueryDto,
     @Req() req: any,
   ): Promise<Pagination<UserDto>> {
-    const users = this.usersService.findAll(query);
+    const users = await this.usersService.findAll(query);
     req.customMessage = 'Users fetched successfully';
     return users;
   }
@@ -87,7 +87,6 @@ export class AdminUsersController {
     @Req() req: any,
   ): Promise<UserDto> {
     const user = await this.usersService.findOneByEmail(email);
-    if (!user) throw new NotFoundException('User not found');
     req.customMessage = 'User retrieved successfully';
     return user;
   }
@@ -112,7 +111,6 @@ export class AdminUsersController {
     @Req() req: any,
   ): Promise<UserDto> {
     const user = await this.usersService.findOneById(id);
-    if (!user) throw new NotFoundException('User not found');
     req.customMessage = 'User retrieved successfully';
     return user;
   }
@@ -140,8 +138,9 @@ export class AdminUsersController {
       `Admin created user with email ${dto.email}`,
       AdminUsersController.name,
     );
+    const createdUser = await this.usersService.create(dto);
     req.customMessage = 'User created successfully';
-    return await this.usersService.create(dto);
+    return createdUser;
   }
 
   @ApiOperation({ summary: 'Update an existing user (admin only)' })
@@ -164,7 +163,7 @@ export class AdminUsersController {
     @Body() dto: UpdateUserDto,
     @Req() req: any,
   ): Promise<UserDto> {
-    const updatedUser = this.usersService.update(id, dto);
+    const updatedUser = await this.usersService.update(id, dto);
     req.customMessage = 'User updated successfully';
     return updatedUser;
   }

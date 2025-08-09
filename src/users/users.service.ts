@@ -35,16 +35,20 @@ export class UsersService {
     return paginateAndMap<User, UserDto>(qb, dto, UserDto);
   }
 
-  async findOneByEmail(email: string): Promise<User | null> {
-    return this.userRepo.findOne({
+  async findOneByEmail(email: string): Promise<User> {
+    const user = await this.userRepo.findOne({
       where: { email },
     });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
-  async findOneById(id: number): Promise<User | null> {
-    return this.userRepo.findOne({
+  async findOneById(id: number): Promise<User> {
+    const user = await this.userRepo.findOne({
       where: { id },
     });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
   async create(dto: CreateUserDto): Promise<User> {
