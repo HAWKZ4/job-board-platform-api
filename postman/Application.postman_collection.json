@@ -1,246 +1,201 @@
 {
-	"info": {
-		"_postman_id": "b0c50bd6-58ba-46fc-a660-22e5abdbcced",
-		"name": "Application",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26281977"
-	},
-	"item": [
-		{
-			"name": "Admin",
-			"item": [
-				{
-					"name": "Get All Applications",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{BASE_URL}}/admin/applications",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"applications"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Get All Applications (filter by userId)",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{BASE_URL}}/admin/applications?userId=3",
-									"host": [
-										"{{BASE_URL}}"
-									],
-									"path": [
-										"admin",
-										"applications"
-									],
-									"query": [
-										{
-											"key": "userId",
-											"value": "3"
-										}
-									]
-								}
-							},
-							"_postman_previewlanguage": null,
-							"header": null,
-							"cookie": [],
-							"body": null
-						},
-						{
-							"name": "Get All Applications (filter by jobId)",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{BASE_URL}}/admin/applications?jobId=1",
-									"host": [
-										"{{BASE_URL}}"
-									],
-									"path": [
-										"admin",
-										"applications"
-									],
-									"query": [
-										{
-											"key": "jobId",
-											"value": "1"
-										}
-									]
-								}
-							},
-							"_postman_previewlanguage": null,
-							"header": null,
-							"cookie": [],
-							"body": null
-						}
-					]
-				},
-				{
-					"name": "Get Application For Admin",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{BASE_URL}}/applications/2",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"applications",
-								"2"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Application Status",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"status\": \"reviewed\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/applications/1",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"applications",
-								"1"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Apply To Job",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"jobId\": 2,\r\n    \"coverLetter\": \"Hi my name is dodo and i love playing football, I have spent many years watching football matches and I like sport shoes\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/applications",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"applications"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get My Applications",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/applications?showDeleted=false&page=1&limit=10",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"applications"
-					],
-					"query": [
-						{
-							"key": "showDeleted",
-							"value": "false"
-						},
-						{
-							"key": "page",
-							"value": "1"
-						},
-						{
-							"key": "limit",
-							"value": "10"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Withdraw Application",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/applications/4/withdraw",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"applications",
-						"4",
-						"withdraw"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Application For User",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/applications/4",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"applications",
-						"4"
-					]
-				}
-			},
-			"response": []
-		}
-	]
+  "info": {
+    "_postman_id": "b0c50bd6-58ba-46fc-a660-22e5abdbcced",
+    "name": "Application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26281977"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Applications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/admin/applications",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "applications"]
+            }
+          },
+          "response": [
+            {
+              "name": "Get All Applications (filter by userId)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/admin/applications?userId=3",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["admin", "applications"],
+                  "query": [
+                    {
+                      "key": "userId",
+                      "value": "3"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": null
+            },
+            {
+              "name": "Get All Applications (filter by jobId)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/admin/applications?jobId=1",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["admin", "applications"],
+                  "query": [
+                    {
+                      "key": "jobId",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": null
+            }
+          ]
+        },
+        {
+          "name": "Get Application For Admin",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/applications/42",
+              "host": ["{{BASE_URL}}"],
+              "path": ["applications", "42"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"reviewed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/applications/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "applications", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Apply To Job",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"jobId\": 171,\r\n    \"coverLetter\": \"Hi my name is dodo and i love playing football, I have spent many years watching football matches and I like sport shoes\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/applications",
+          "host": ["{{BASE_URL}}"],
+          "path": ["applications"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get My Applications",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/applications?showDeleted=false&page=1&limit=10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["applications"],
+          "query": [
+            {
+              "key": "showDeleted",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Application For User",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/applications/4",
+          "host": ["{{BASE_URL}}"],
+          "path": ["applications", "4"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Withdraw Application",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/applications/42/withdraw",
+          "host": ["{{BASE_URL}}"],
+          "path": ["applications", "42", "withdraw"]
+        }
+      },
+      "response": []
+    }
+  ]
 }

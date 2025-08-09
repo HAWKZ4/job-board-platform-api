@@ -1,288 +1,233 @@
 {
-	"info": {
-		"_postman_id": "1ea6e1b1-28d0-4fe6-bf29-d5ff6e1be2c3",
-		"name": "User",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26281977"
-	},
-	"item": [
-		{
-			"name": "Create User",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"firstName\": \"simple user\",\r\n    \"lastName\":\"simple user\",\r\n    \"email\": \"test1@test.com\",\r\n    \"password\": \"12345\",\r\n    \"role\": \"user\",\r\n    \"location\": \"uae\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/users",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get All Users",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/users?page=1&limit=2",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users"
-					],
-					"query": [
-						{
-							"key": "page",
-							"value": "1"
-						},
-						{
-							"key": "limit",
-							"value": "2"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get User By ID",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/users/1",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Me",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/users/me",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users",
-						"me"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get User By Email",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/users/email/test@test.com",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users",
-						"email",
-						"test@test.com"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update User",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"firstName\": \"solana\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/users/18",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users",
-						"18"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Restore User",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "PATCH",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/users/restore/2",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users",
-						"restore",
-						"2"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/users/2",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"users",
-						"2"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Delete User (SOFT)",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/users/3?force=false",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"users",
-								"3"
-							],
-							"query": [
-								{
-									"key": "force",
-									"value": "false"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				},
-				{
-					"name": "Delete User (HARD)",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/users/4?force=true",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"users",
-								"4"
-							],
-							"query": [
-								{
-									"key": "force",
-									"value": "true"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "1ea6e1b1-28d0-4fe6-bf29-d5ff6e1be2c3",
+    "name": "User",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26281977"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"simple user\",\r\n    \"lastName\":\"simple user\",\r\n    \"email\": \"1@so2test.com\",\r\n    \"password\": \"12345\",\r\n    \"role\": \"user\",\r\n    \"location\": \"uae\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNjUiLCJpYXQiOjE3NTQ3MzcxMjksImV4cCI6MTc1NDc0MDcyOX0.4SsDaBl0C7aOB7T1TvPJcZ61ZghNbQ68wExvh4e1Cas",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users?page=1&limit=10",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users/170",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users", "170"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users/email/test@test.com",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users", "email", "test@test.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"solana\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users/180",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users", "180"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Restore User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users/restore/183",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users", "restore", "183"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/users/2",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "users", "2"]
+            }
+          },
+          "response": [
+            {
+              "name": "Delete User (SOFT)",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/users/183?force=false",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["users", "183"],
+                  "query": [
+                    {
+                      "key": "force",
+                      "value": "false"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": null
+            },
+            {
+              "name": "Delete User (HARD)",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/users/4?force=true",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["users", "4"],
+                  "query": [
+                    {
+                      "key": "force",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

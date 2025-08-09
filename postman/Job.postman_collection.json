@@ -1,523 +1,439 @@
 {
-	"info": {
-		"_postman_id": "75ba19da-f52a-420e-a34b-af68db00833c",
-		"name": "Job",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26281977"
-	},
-	"item": [
-		{
-			"name": "Create Job",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"title\": \"Senior Frontend Developer\",\n  \"company\": \"techno Inc.\",\n  \"location\": \"test\",\n  \"description\": \"Design and implement scalable backend services using NestJS and TypeORM. Lead architecture decisions and mentor junior developers.\",\n  \"category\": \"Software Development\",\n  \"type\": \"full-time\",\n  \"remote\": true,\n  \"requirements\": \"5+ years Node.js experience, strong TypeScript skills, AWS knowledge\",\n  \"salaryRange\": \"$120,000 - $150,000\",\n  \"isPublished\": true\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/admin/jobs",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"admin",
-						"jobs"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get All Jobs By User",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/jobs",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"jobs"
-					],
-					"query": [
-						{
-							"key": "page",
-							"value": "1",
-							"disabled": true
-						},
-						{
-							"key": "limit",
-							"value": "10",
-							"disabled": true
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Job By User",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/jobs/7",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"jobs",
-						"7"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Job By Admin",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/admin/jobs/7",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"admin",
-						"jobs",
-						"7"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get All Jobs By Admin",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/admin/jobs",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"admin",
-						"jobs"
-					],
-					"query": [
-						{
-							"key": "showDeleted",
-							"value": "false",
-							"disabled": true
-						},
-						{
-							"key": "page",
-							"value": "1",
-							"disabled": true
-						},
-						{
-							"key": "limit",
-							"value": "10",
-							"disabled": true
-						}
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Get All Jobs By Admin (show deleted)",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs?showDeleted=true",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs"
-							],
-							"query": [
-								{
-									"key": "showDeleted",
-									"value": "true"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				},
-				{
-					"name": "Get All Jobs By Admin(with pagination)",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs?page=1&limit=10",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "10"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				},
-				{
-					"name": "Get All Jobs By Admin (filter by title)",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs?title=backend",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs"
-							],
-							"query": [
-								{
-									"key": "title",
-									"value": "backend"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				},
-				{
-					"name": "Get All Jobs By Admin (filter by company)",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs?company=perla",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs"
-							],
-							"query": [
-								{
-									"key": "company",
-									"value": "perla"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				},
-				{
-					"name": "Get All Jobs By Admin (filter by location)",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs?location=test",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs"
-							],
-							"query": [
-								{
-									"key": "location",
-									"value": "test"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				}
-			]
-		},
-		{
-			"name": "Update Job",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"title\":\"title updated\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/admin/jobs/10",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"admin",
-						"jobs",
-						"10"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Restore Job",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "PATCH",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/admin/jobs/restore/11",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"admin",
-						"jobs",
-						"restore",
-						"11"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Job",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/admin/jobs/11",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"admin",
-						"jobs",
-						"11"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "Delete Job (SOFT)",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs/4?force=false",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs",
-								"4"
-							],
-							"query": [
-								{
-									"key": "force",
-									"value": "false"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				},
-				{
-					"name": "Delete Job (HARD)",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/admin/jobs/11?force=true",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"admin",
-								"jobs",
-								"11"
-							],
-							"query": [
-								{
-									"key": "force",
-									"value": "true"
-								}
-							]
-						}
-					},
-					"_postman_previewlanguage": null,
-					"header": null,
-					"cookie": [],
-					"body": null
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "75ba19da-f52a-420e-a34b-af68db00833c",
+    "name": "Job",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26281977"
+  },
+  "item": [
+    {
+      "name": "Create Job",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Senior Frontend Developer\",\n  \"company\": \"techno Inc.\",\n  \"location\": \"test\",\n  \"description\": \"Design and implement scalable backend services using NestJS and TypeORM. Lead architecture decisions and mentor junior developers.\",\n  \"category\": \"Software Development\",\n  \"type\": \"full-time\",\n  \"remote\": true,\n  \"requirements\": \"5+ years Node.js experience, strong TypeScript skills, AWS knowledge\",\n  \"salaryRange\": \"$120,000 - $150,000\",\n  \"isPublished\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/admin/jobs",
+          "host": ["{{BASE_URL}}"],
+          "path": ["admin", "jobs"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Jobs By User",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/jobs",
+          "host": ["{{BASE_URL}}"],
+          "path": ["jobs"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "disabled": true
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Job By User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/jobs/7",
+          "host": ["{{BASE_URL}}"],
+          "path": ["jobs", "7"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Job By Admin",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/admin/jobs/7",
+          "host": ["{{BASE_URL}}"],
+          "path": ["admin", "jobs", "7"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Jobs By Admin",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/admin/jobs?showDeleted=false&page=1&limit=10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["admin", "jobs"],
+          "query": [
+            {
+              "key": "showDeleted",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Get All Jobs By Admin (show deleted)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs?showDeleted=true",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs"],
+              "query": [
+                {
+                  "key": "showDeleted",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        },
+        {
+          "name": "Get All Jobs By Admin(with pagination)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs?page=1&limit=10",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        },
+        {
+          "name": "Get All Jobs By Admin (filter by title)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs?title=backend",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs"],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "backend"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        },
+        {
+          "name": "Get All Jobs By Admin (filter by company)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs?company=perla",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs"],
+              "query": [
+                {
+                  "key": "company",
+                  "value": "perla"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        },
+        {
+          "name": "Get All Jobs By Admin (filter by location)",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs?location=test",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs"],
+              "query": [
+                {
+                  "key": "location",
+                  "value": "test"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "name": "Update Job",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\":\"title updated\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/admin/jobs/10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["admin", "jobs", "10"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Restore Job",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/admin/jobs/restore/11",
+          "host": ["{{BASE_URL}}"],
+          "path": ["admin", "jobs", "restore", "11"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Job",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/admin/jobs/11",
+          "host": ["{{BASE_URL}}"],
+          "path": ["admin", "jobs", "11"]
+        }
+      },
+      "response": [
+        {
+          "name": "Delete Job (SOFT)",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs/4?force=false",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs", "4"],
+              "query": [
+                {
+                  "key": "force",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        },
+        {
+          "name": "Delete Job (HARD)",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/admin/jobs/11?force=true",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "jobs", "11"],
+              "query": [
+                {
+                  "key": "force",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        }
+      ]
+    }
+  ]
 }
