@@ -1,98 +1,232 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 💼 Job Board Platform – Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A **production-ready job application backend** built with **NestJS**, **PostgreSQL**, **TypeORM**, and **JWT (HTTP-only cookies)**.  
+Designed with **role-based access control**, **clean architecture**, and **developer-friendly tooling**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+----------
 
-## Description
+## 🚀 Tech Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+-   **Framework**: [NestJS](https://nestjs.com/)
+    
+-   **Database**: PostgreSQL + TypeORM
+    
+-   **Authentication**: JWT (Access & Refresh, HTTP-only cookies)
+    
+-   **File Uploads**: Multer (resume PDFs)
+    
+-   **API Docs**: Swagger (OpenAPI 3)
+    
+-   **DevOps**: Docker & Docker Compose
+    
+-   **Testing & Tools**: Postman collections, seed scripts
+    
 
-## Project setup
+----------
 
-```bash
-$ npm install
+## ✅ Features
+
+### 👤 Users (Job Seekers)
+
+-   Register, login, logout (secure cookies)
+    
+-   View & update profile
+    
+-   Change password
+    
+-   Upload resume (PDF)
+    
+-   Browse/search jobs (title, company, location)
+    
+-   Apply for jobs (cover letter + resume)
+    
+-   View or withdraw applications
+    
+
+### 🛠️ Admins
+
+-   **Users**: list, create, update, soft delete
+    
+-   **Jobs**: create, update, delete, publish/unpublish
+    
+-   **Applications**: view all, filter by job/user, update status
+    
+    -   `pending → reviewed → accepted/rejected`
+        
+
+### ⚙️ System & Infrastructure
+
+-   Role-based access control (`@Roles`)
+    
+-   Guards for auth & role-protected routes
+    
+-   **CORS configuration** → controlled origins in dev/prod
+    
+-   **Rate limiting** → brute-force protection
+    
+-   **Global error handling** → unified API error responses
+    
+-   **Logging** → all requests & errors logged under `/logs` with timestamps
+    
+-   Entities: `User`, `Profile`, `Job`, `Application`, `Role`
+    
+-   Soft deletes + timestamps
+    
+-   CSV export for admins
+    
+-   Pagination & filtering
+    
+-   **Data seeding** → `/data/users.json` & `/data/jobs.json`
+    
+
+----------
+
+## 📚 API Documentation
+
+-   **Swagger UI**: `http://localhost:3000/api/docs` (dev)
+    
+-   **Postman collections** (in `/postman`):
+    
+    -   `Auth.postman_collection.json`
+        
+    -   `User.postman_collection.json`
+        
+    -   `Profile.postman_collection.json`
+        
+    -   `Job.postman_collection.json`
+        
+    -   `Application.postman_collection.json`
+        
+    -   `Local.postman_environment.json`
+        
+
+----------
+
+## 📂 Project Structure
+
+```
+src/
+  ├── admin/              # Admin-only controllers & services
+  ├── applications/       # Job applications module
+  ├── auth/               # JWT auth, guards, roles
+  ├── common/             # Global interceptors, decorators, filters
+  ├── database/           # TypeORM config, migrations, seeding
+  ├── jobs/               # Job entity & CRUD logic
+  ├── my-logger/          # Custom logging service
+  ├── profiles/           # User profiles & resume upload
+  ├── users/              # User entity & CRUD logic
+  ├── all-exceptions-filter.ts   # Global error filter
+  ├── app.module.ts              # Root module
+  └── main.ts                    # Application bootstrap
+
 ```
 
-## Compile and run the project
+----------
+
+## 📦 Installation & Setup
+
+### 1️⃣ Clone the repository
 
 ```bash
-# development
-$ npm run start
+git clone https://github.com/yourusername/job-board-platform-api.git
+cd job-board-platform-api
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+### 2️⃣ Configure environment variables
+
+Copy `.env.example` → `.env` and adjust values:
+
+```env
+# App
+PORT=3000
+NODE_ENV=development
+
+# Database
+DATABASE_HOST=db
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=jobboard
+
+# JWT
+JWT_ACCESS_TOKEN_SECRET=supersecret
+JWT_ACCESS_TOKEN_EXPIRATION_MS=900000
+JWT_REFRESH_TOKEN_SECRET=supersecretrefresh
+JWT_REFRESH_TOKEN_EXPIRATION_MS=604800000
+
+# Uploads
+RESUME_UPLOAD_PATH=./uploads/resumes
+
+```
+
+### 3️⃣ Run with Docker (dev mode)
 
 ```bash
-# unit tests
-$ npm run test
+docker-compose -f docker-compose.dev.yml up --build
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
-## Deployment
+-   API → `http://localhost:3000`
+    
+-   Swagger → `http://localhost:3000/api/docs`
+    
+-   PGAdmin → `http://localhost:8080` (`admin@admin.com` / `admin`)
+    
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 4️⃣ Database migrations
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+npm run typeorm:run-migrations
+
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 5️⃣ Seeding data
 
-## Resources
+-   Random data:
+    
+    ```bash
+    npm run seed:random
+    
+    ```
+    
+-   From prepared JSON files (`/data/users.json`, `/data/jobs.json`):
+    
+    ```bash
+    npm run seed:json
+    
+    ```
+    
 
-Check out a few resources that may come in handy when working with NestJS:
+----------
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 📝 NPM Scripts
 
-## Support
+```json
+"typeorm:create-migration": "npm run typeorm -- migration:create ./migrations/$npm_config_name",
+"typeorm:run-migrations": "npm run typeorm migration:run -- -d ./typeorm.config.ts",
+"typeorm:revert-migrations": "npm run typeorm migration:revert -- -d ./typeorm.config.ts",
+"seed:random": "ts-node -r tsconfig-paths/register scripts/seed-random.ts",
+"seed:json": "ts-node -r tsconfig-paths/register scripts/seed-from-json.ts",
+"destroy": "ts-node -r tsconfig-paths/register scripts/destroy.ts"
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
 
-## Stay in touch
+----------
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 📌 Notes for Reviewers
 
-## License
+This repo is designed as a **showcase project**:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+-   Clear **commit history** (feature branches → main)
+    
+-   Includes **API docs + Postman collections**
+    
+-   Demonstrates **real-world patterns**: auth, RBAC, error handling, logging, migrations, seeding
+    
+-   Dockerized for portability
+    
+-   Built with a focus on **security, observability, and maintainability**
+    
+
+----------
