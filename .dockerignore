@@ -1,0 +1,22 @@
+# Ignore node_modules (installed inside container instead)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Ignore build output
+dist
+coverage
+
+# Ignore environment files (don’t bake secrets into Docker images!)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignore uploads (we mount them as a volume instead)
+uploads
+
+# Misc
+*.log
+.DS_Store
