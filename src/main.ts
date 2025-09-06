@@ -48,7 +48,7 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
-  const port = configService.getOrThrow<number>('PORT') || 3000;
+  const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
 }
 
