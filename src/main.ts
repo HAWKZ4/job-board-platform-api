@@ -21,24 +21,28 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Job Board Platform API')
     .setDescription(
-      `API documentation for the Job Board Platform.  
-      This platform connects job seekers and employers with role-based access.
+      `
+API documentation for the Job Board Platform.
+This platform connects job seekers and employers with role-based access.
 
-      **Authentication:**  
-      Protected endpoints use an HttpOnly cookie named \`Authentication\`.  
-      To test these endpoints from Swagger UI, you must first log into the main web app in the **same browser** and keep the session active.  
-      Swagger itself cannot set this cookie because it is HttpOnly.
+#### Authentication
 
-      **Note:** The \`POST /auth/login\` endpoint is not directly testable via Swagger
-      because it uses Passport Local Strategy for authentication.
-      Please log in through the main web app or Postman.
+Protected endpoints use an **HttpOnly** cookie named \`Authentication\`.
+To test these endpoints from Swagger UI, you must first log into the main web app in the **same browser** and keep the session active.
+Swagger itself cannot set this cookie because it is HttpOnly.
+
+#### Note
+
+The \`POST /auth/login\` endpoint is not directly testable via Swagger
+because it uses Passport Local Strategy for authentication.
+Please log in through the main web app or Postman.
     `,
     )
     .setVersion('1.0.0')
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api/v1/docs', app, documentFactory);
 
   const configService = app.get(ConfigService);
   app.useGlobalPipes(

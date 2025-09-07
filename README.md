@@ -83,7 +83,7 @@ Designed with **role-based access control**, **clean architecture**, and **devel
 
 ## 📚 API Documentation
 
--   **Swagger UI**: `http://localhost:3000/api/docs` (dev)
+-   **Swagger UI**: `http://localhost:3000/api/v1/docs` (dev)
     
 -   **Postman collections** (in `/postman`):
     
@@ -128,7 +128,7 @@ src/
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/job-board-platform-api.git
+git clone https://github.com/malsadefs/job-board-platform-api.git
 cd job-board-platform-api
 
 ```
@@ -167,9 +167,9 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ```
 
--   API → `http://localhost:3000`
+-   API → `http://localhost:3000/api/v1`
     
--   Swagger → `http://localhost:3000/api/docs`
+-   Swagger → `http://localhost:3000/api/v1/docs`
     
 -   PGAdmin → `http://localhost:8080` (`admin@admin.com` / `admin`)
     
