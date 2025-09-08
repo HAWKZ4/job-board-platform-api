@@ -49,7 +49,7 @@ export class UserDto {
     description: 'User role (e.g., user, admin)',
   })
   @Expose()
-  role: UserRole; // Use the enum type, not string
+  role: UserRole;
 
   @ApiProperty({
     example: 'https://example.com/resumes/john-doe.pdf',
@@ -57,7 +57,7 @@ export class UserDto {
     required: false,
     nullable: true,
   })
-  @Expose() // Only expose to admins
+  @Expose()
   resumeUrl?: string | null;
 
   @ApiProperty({

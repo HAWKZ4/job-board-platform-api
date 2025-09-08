@@ -14,14 +14,14 @@ import { DatabaseModule } from './database/database.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // makes it available everywhere
+      isGlobal: true,
     }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
           name: 'short',
-          ttl: 1000, // 1sec
-          limit: 3, // 3req
+          ttl: 1000,
+          limit: 3,
         },
         {
           name: 'medium',

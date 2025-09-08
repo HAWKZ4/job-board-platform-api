@@ -27,11 +27,10 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       statusCode = exception.getStatus();
       const res = exception.getResponse();
 
-      // Extract message from object or string
       if (typeof res === 'string') {
         message = res;
       } else if (typeof res === 'object' && res !== null) {
-        message = (res as any).message || JSON.stringify(res); // fallback in case no message key
+        message = (res as any).message || JSON.stringify(res);
       }
     } else if (exception instanceof QueryFailedError) {
       const pgError = exception as any;

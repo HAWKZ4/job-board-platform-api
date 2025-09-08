@@ -47,7 +47,7 @@ Please log in through the main web app or Postman.
   const configService = app.get(ConfigService);
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, //removes all properties that aren't in the DTO
+      whitelist: true,
       transform: true,
     }),
   );

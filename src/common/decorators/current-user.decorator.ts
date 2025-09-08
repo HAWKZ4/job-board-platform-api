@@ -1,6 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-// => Means the function will return
 const getCurrentUserByContext = (context: ExecutionContext) =>
   context.switchToHttp().getRequest().user;
 

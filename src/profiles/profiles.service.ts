@@ -61,22 +61,17 @@ export class ProfilesService {
     user: SafeUser,
     filename: string,
   ): Promise<string> {
-    // 1. Validate filename
     if (!this.isValidFilename(filename)) {
       throw new ForbiddenException('Invalid filename format');
     }
 
-    // 2. Get configured directory
     const resumesDir =
       this.configService.getOrThrow<string>('RESUME_UPLOAD_PATH');
 
-    // 3. Create directory if it doesn't exist
     await this.ensureDirectoryExists(resumesDir);
 
-    // 4. Create safe absolute path
     const absolutePath = path.resolve(resumesDir, filename);
 
-    // 5. Verify file exists and is readable
     try {
       await fs.access(absolutePath, fs.constants.R_OK);
     } catch (error) {
@@ -84,7 +79,6 @@ export class ProfilesService {
       throw new NotFoundException('Resume not found');
     }
 
-    // 6. Authorization checks
     const userWithInfo = await this.usersService.findOneById(user.id);
     if (!userWithInfo) throw new NotFoundException('User not found');
 

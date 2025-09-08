@@ -20,8 +20,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
         (request: Request) => request.cookies?.Refresh,
       ]),
       secretOrKey: configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
-      
-      // Pass the entire request object to the validate method (needed for cookies access)
+
       passReqToCallback: true,
     });
   }

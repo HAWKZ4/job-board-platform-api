@@ -23,7 +23,6 @@ export class SerializeInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((response: any) => {
         if (response?.data && Array.isArray(response.data)) {
-          // Transform each User entity in the data into UserDto, applying @Expose()
           return {
             ...response,
             data: plainToInstance(this.dto, response.data, {

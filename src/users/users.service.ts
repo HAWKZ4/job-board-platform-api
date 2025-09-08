@@ -108,7 +108,7 @@ export class UsersService {
 
     if (user?.resumeUrl) {
       const fullPath = join(process.cwd(), user.resumeUrl);
-      await fs.access(fullPath); // check if file exists, throws if not
+      await fs.access(fullPath);
       await fs.unlink(fullPath);
     }
 
@@ -138,17 +138,15 @@ export class UsersService {
     const user = await this.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    // Remove old resume if it exists
     if (user.resumeUrl) {
       const oldFilePath = path.join(
         RESUME_UPLOADS_DIR,
         path.basename(user.resumeUrl),
       );
       try {
-        await fs.access(oldFilePath); // check if file exists, throws if not
+        await fs.access(oldFilePath);
         await fs.unlink(oldFilePath);
       } catch (err) {
-        // Log error but don't fail the whole operation if deletion fails
         console.warn(
           `Failed to delete old resume at ${oldFilePath}:`,
           err.message,

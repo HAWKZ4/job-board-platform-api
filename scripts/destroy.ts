@@ -7,7 +7,6 @@ import { User } from 'src/users/entities/user.entity';
 async function destroy() {
   await dataSource.initialize();
 
-  // Must delete in correct order (child → parent) if there's relations
   await dataSource
     .getRepository(Application)
     .createQueryBuilder()

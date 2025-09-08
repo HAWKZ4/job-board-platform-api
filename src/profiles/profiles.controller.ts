@@ -194,7 +194,6 @@ export class ProfilesController {
         destination: RESUME_UPLOADS_DIR,
       }),
       limits: {
-        // Byte => KB => etc...
         fileSize: 1000 * 1000 * 5, // 5MB
       },
       fileFilter: pdfFileFilter,
@@ -264,7 +263,7 @@ export class ProfilesController {
         if (err) {
           reject(new InternalServerErrorException('File delivery failed'));
         } else {
-          resolve(); // Success
+          resolve();
         }
       });
     });

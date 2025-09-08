@@ -17,8 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => request.cookies?.Authentication,
       ]),
-      // This tells Passport NOT to accept expired tokens.
-      // If the token is expired, Passport will throw an unauthorized error (usually 401).
+
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
     });

@@ -18,10 +18,8 @@ export class TransformInterceptor implements NestInterceptor {
       map((data) => {
         const statusCode = response.statusCode || 200;
 
-        // Allow controller/route to set a custom message
         const customMessage = request?.customMessage || 'Request successful';
 
-        // If controller returns { items, meta }, treat it as paginated
         if (data && data.items && data.meta) {
           return {
             statusCode,
@@ -31,7 +29,6 @@ export class TransformInterceptor implements NestInterceptor {
           };
         }
 
-        // If controller returns raw data (for example: obj)
         if (data !== undefined && data !== null) {
           return {
             statusCode,
@@ -40,7 +37,6 @@ export class TransformInterceptor implements NestInterceptor {
           };
         }
 
-        // No data
         return {
           statusCode,
           message: customMessage,
