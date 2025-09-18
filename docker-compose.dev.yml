@@ -1,5 +1,5 @@
 services:
-  db:
+  postgres:
     image: postgres:16-alpine
     container_name: job-board-db-dev
     environment:
@@ -7,25 +7,24 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     ports:
-      - "5432:5432"
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
   api:
     build:
       context: .
-      target: development
+      dockerfile: Dockerfile.dev
     container_name: job-board-api-dev
-    command: npm run start:dev
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
       - ./uploads:/usr/src/app/uploads
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT}:${PORT}"
     env_file:
-      - .env
+      - .env.dev
     depends_on:
-      - db
+      - postgres
 
   pgadmin:
     image: dpage/pgadmin4
@@ -36,7 +35,7 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - db
+      - postgres
   
 volumes:
   postgres_data_dev:
