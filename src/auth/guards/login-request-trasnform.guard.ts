@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable, mixin } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { plainToInstance } from 'class-transformer';
-import { LoginDto } from '../dtos/login.dto';
+import { LoginUserRequestDto } from '../dtos/login-user-request.dto';
 
 export function LoginRequestTransformGuard() {
   @Injectable()
@@ -9,7 +9,7 @@ export function LoginRequestTransformGuard() {
     override async canActivate(context: ExecutionContext): Promise<boolean> {
       const request = context.switchToHttp().getRequest();
 
-      const dto = plainToInstance(LoginDto, request.body);
+      const dto = plainToInstance(LoginUserRequestDto, request.body);
 
       request.body = {
         email: String(dto.email),

@@ -1,11 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { TokenPayload } from '../interfaces/token-payload.interface';
 import { UsersService } from 'src/users/users.service';
-import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,8 +22,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: TokenPayload): Promise<SafeUser> {
-    const user = await this.usersService.findOneById(+payload.userId);
+  async validate(payload: TokenPayload) {
+    const user = await this.usersService.findUserById(+payload.userId);
 
     return {
       id: user.id,
