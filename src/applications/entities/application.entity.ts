@@ -19,8 +19,8 @@ export class Application {
   @Column({ name: 'cover_letter' })
   coverLetter: string;
 
-  @Column({ name: 'resume_path' })
-  resumePath: string;
+  @Column({ name: 'submitted_resume_path' })
+  submittedResumePath: string; // snapshot resume
 
   @Column({
     type: 'enum',
