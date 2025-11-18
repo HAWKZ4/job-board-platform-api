@@ -56,11 +56,12 @@ export class UserApplicationDto {
   coverLetter: string;
 
   @ApiProperty({
-    example: '/uploads/resumes/john_doe_cv.pdf',
-    description: 'Path to the uploaded resume file',
+    example: '/uploads/resumes/resume-old.pdf',
+    description:
+      'The resume file that YOU submitted with this application (snapshot).',
   })
   @Expose()
-  resumePath: string;
+  submittedResumePath: string;
 
   @ApiProperty({
     enum: ApplicationStatus,
@@ -69,14 +70,6 @@ export class UserApplicationDto {
   })
   @Expose()
   status: ApplicationStatus;
-
-  @ApiProperty({
-    type: UserInfo,
-    description: 'Basic information about the user who applied',
-  })
-  @Expose()
-  @Type(() => UserInfo)
-  user: UserInfo;
 
   @ApiProperty({
     type: JobInfo,

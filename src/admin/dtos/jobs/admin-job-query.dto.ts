@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBooleanString, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 
 export class AdminJobQueryDto extends PaginationQueryDto {
@@ -32,6 +33,7 @@ export class AdminJobQueryDto extends PaginationQueryDto {
     description: 'Whether to include soft-deleted jobs',
   })
   @IsOptional()
-  @IsBooleanString()
-  showDeleted?: string;
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  showDeleted?: boolean;
 }

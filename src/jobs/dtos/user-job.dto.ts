@@ -19,7 +19,10 @@ export class UserJobDto {
   @Expose()
   location: string;
 
-  @ApiProperty({ example: 'Join our team as a frontend developer working with React and TypeScript.' })
+  @ApiProperty({
+    example:
+      'Join our team as a frontend developer working with React and TypeScript.',
+  })
   @Expose()
   description: string;
 
@@ -35,7 +38,9 @@ export class UserJobDto {
   @Expose()
   remote: boolean;
 
-  @ApiProperty({ example: '3+ years of experience with modern JavaScript frameworks' })
+  @ApiProperty({
+    example: '3+ years of experience with modern JavaScript frameworks',
+  })
   @Expose()
   requirements: string;
 
@@ -45,5 +50,5 @@ export class UserJobDto {
 
   @ApiProperty({ example: '2025-08-01T12:00:00Z' })
   @Expose()
-  createdAt: Date;
+  updatedAt: Date;
 }

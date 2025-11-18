@@ -73,4 +73,11 @@ export class UserDto {
   })
   @Expose()
   updatedAt: Date;
+
+  @ApiProperty({
+    example: '2023-01-02T00:00:00.000Z',
+    description: 'Timestamp when user was last deleted',
+  })
+  @Expose()
+  deletedAt: Date;
 }

@@ -75,11 +75,12 @@ export class AdminApplicationDto {
   coverLetter: string;
 
   @ApiProperty({
-    example: 'uploads/resume.pdf',
-    description: 'Path to the resume file',
+    example: '/uploads/resumes/resume-old.pdf',
+    description:
+      'Resume file that was submitted with this application (snapshot).',
   })
   @Expose()
-  resumePath: string;
+  submittedResumePath: string;
 
   @ApiProperty({
     enum: ApplicationStatus,
@@ -118,4 +119,11 @@ export class AdminApplicationDto {
   })
   @Expose()
   updatedAt: Date;
+
+  @ApiProperty({
+    example: '2023-01-02T00:00:00.000Z',
+    description: 'Timestamp when user was last deleted',
+  })
+  @Expose()
+  deletedAt: Date;
 }

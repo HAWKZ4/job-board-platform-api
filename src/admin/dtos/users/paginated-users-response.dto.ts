@@ -4,16 +4,7 @@ import { MetaDto } from 'src/common/dtos/pagination/meta.dto';
 
 export class PaginatedUsersResponseDto {
   @ApiProperty({ type: [UserDto] })
-  data: UserDto[];
-
-  @ApiProperty({ example: 200, description: 'HTTP status code' })
-  statusCode: number;
-
-  @ApiProperty({
-    example: 'Users fetched successfully',
-    description: 'Operation status message',
-  })
-  message: string;
+  items: UserDto[];
 
   @ApiProperty({ type: MetaDto, description: 'Pagination metadata' })
   meta: MetaDto;

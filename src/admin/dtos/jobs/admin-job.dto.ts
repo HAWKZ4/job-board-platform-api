@@ -9,7 +9,7 @@ export class AdminJobDto extends UserJobDto {
 
   @ApiProperty({ example: '2025-08-01T12:00:00Z' })
   @Expose()
-  updatedAt: Date;
+  createdAt: Date;
 
   @ApiProperty({
     example: null,
