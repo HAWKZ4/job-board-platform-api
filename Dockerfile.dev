@@ -6,7 +6,8 @@ COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+# COPY . .
+# Because bind mount replaces everything anyway => COPY becomes pointless.
 
 EXPOSE ${PORT}
 

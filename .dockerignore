@@ -20,3 +20,6 @@ uploads
 # Misc
 *.log
 .DS_Store
+
+.vscode
+.idea
