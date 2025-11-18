@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { VALID_FILENAME_REGEX } from 'src/common/constatns/constants';
 import { User } from 'src/users/entities/user.entity';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
+import { Response } from 'express';
 
 @Injectable()
 export class ProfilesService {
@@ -27,25 +29,24 @@ export class ProfilesService {
     private readonly configService: ConfigService,
   ) {}
 
-  async update(id: number, dto: UpdateProfileDto): Promise<User> {
-    return this.usersService.updateFromProfile(id, dto);
+  private readonly logger = new Logger(ProfilesService.name);
+
+  async updateProfile(id: number, dto: UpdateProfileDto) {
+    return this.usersService.updateUserProfile(id, dto);
   }
 
-  async delete(id: number, dto: DeleteProfileDto): Promise<void> {
-    const user = await this.usersService.findOneById(id);
-
-    if (!user) throw new NotFoundException('User not found');
+  async deleteProfile(id: number, dto: DeleteProfileDto) {
+    const user = await this.usersService.findUserById(id);
 
     const isMatch = await compare(dto.password, user.password);
-
     if (!isMatch) throw new UnauthorizedException('Invalid password');
 
-    await this.usersService.delete(user.id, false);
+    await this.usersService.deleteUser(user.id);
   }
 
   async changePassword(id: number, dto: ChangePasswordDto) {
-    const user = await this.usersService.findOneById(id);
-    if (!user) throw new NotFoundException('User not found');
+    const user = await this.usersService.findUserById(id);
+
     const isMatch = await compare(dto.currentPassword, user.password);
 
     if (!isMatch) throw new UnauthorizedException('Current password incorrect');
@@ -53,14 +54,11 @@ export class ProfilesService {
     await this.usersService.changePassword(user, dto);
   }
 
-  async updateUserResumeUrl(userId: number, resumeUrl: string): Promise<void> {
-    await this.usersService.updateResume(userId, resumeUrl);
+  async updateUserResumeUrl(userId: number, resumeUrl: string) {
+    await this.usersService.updateUserResume(userId, resumeUrl);
   }
 
-  async verifyUserResumeAccess(
-    user: SafeUser,
-    filename: string,
-  ): Promise<string> {
+  async verifyUserResumeAccess(user: SafeUser, filename: string) {
     if (!this.isValidFilename(filename)) {
       throw new ForbiddenException('Invalid filename format');
     }
@@ -75,12 +73,11 @@ export class ProfilesService {
     try {
       await fs.access(absolutePath, fs.constants.R_OK);
     } catch (error) {
-      console.error(`File access error for ${filename}: ${error.message}`);
+      this.logger.error(`File access error for ${filename}: ${error.message}`);
       throw new NotFoundException('Resume not found');
     }
 
-    const userWithInfo = await this.usersService.findOneById(user.id);
-    if (!userWithInfo) throw new NotFoundException('User not found');
+    const userWithInfo = await this.usersService.findUserById(user.id);
 
     this.checkUserAuthorization(userWithInfo, filename);
 
@@ -91,7 +88,7 @@ export class ProfilesService {
     return VALID_FILENAME_REGEX.test(filename);
   }
 
-  private async ensureDirectoryExists(dirPath: string): Promise<void> {
+  private async ensureDirectoryExists(dirPath: string) {
     try {
       await fs.mkdir(dirPath, { recursive: true });
     } catch (error) {
@@ -111,5 +108,22 @@ export class ProfilesService {
     if (userFilename !== filename) {
       throw new ForbiddenException('You can only access your own resume');
     }
+  }
+
+  async serveResume(filename: string, user: SafeUser, response: Response) {
+    const filePath = await this.verifyUserResumeAccess(user, filename);
+
+    response.setHeader('Content-Type', 'application/pdf');
+    response.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+
+    return new Promise<void>((resolve, reject) => {
+      response.sendFile(filePath, (err) => {
+        if (err) {
+          reject(new InternalServerErrorException('File delivery failed'));
+        } else {
+          resolve();
+        }
+      });
+    });
   }
 }

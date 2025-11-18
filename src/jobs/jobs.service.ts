@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from './entites/job.entity';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { UpdateJobDto } from './dtos/update-job.dto';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminJobDto } from '../admin/dtos/jobs/admin-job.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
 import { UserJobDto } from './dtos/user-job.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
 import { AdminJobQueryDto } from '../admin/dtos/jobs/admin-job-query.dto';
+import { AdminSingleJobQueryDto } from 'src/admin/dtos/jobs/admin-single-job-query.dto';
 
 @Injectable()
 export class JobsService {
@@ -18,9 +18,7 @@ export class JobsService {
   ) {}
 
   // User-Methods
-  async findAllByUser(
-    dto: PaginationQueryDto,
-  ): Promise<Pagination<UserJobDto>> {
+  async findAllJobsForUser(dto: PaginationQueryDto) {
     const { page = 1, limit = 10 } = dto;
 
     const qb = this.jobRepo
@@ -28,35 +26,43 @@ export class JobsService {
       .where('job.deletedAt IS NULL')
       .orderBy('job.createdAt', 'DESC');
 
-    return paginateAndMap<Job, UserJobDto>(
+    return paginateAndMap(
       qb,
       {
         page,
         limit,
       },
-      AdminJobDto,
+      UserJobDto,
     );
   }
 
-  async findOneForUser(id: number): Promise<Job> {
+  private async findJobById(id: number, includeDeleted = false) {
     const job = await this.jobRepo.findOne({
-      where: { id, isPublished: true, deletedAt: IsNull() },
+      where: {
+        id,
+      },
+      withDeleted: includeDeleted,
     });
-    if (!job) throw new NotFoundException('Job not found');
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
     return job;
   }
 
+  async findJobForUser(id: number) {
+    return this.findJobById(id);
+  }
+
   // Admin-Methods
-  async findAllByAdmin(
-    dto: AdminJobQueryDto,
-  ): Promise<Pagination<AdminJobDto>> {
+  async findAllJobsForAdmin(dto: AdminJobQueryDto) {
     const { page = 1, limit = 10, showDeleted, company, location, title } = dto;
 
     const qb = this.jobRepo
       .createQueryBuilder('job')
       .orderBy('job.createdAt', 'DESC');
 
-    if (showDeleted === 'true') qb.withDeleted();
+    if (showDeleted) qb.withDeleted();
 
     if (company)
       qb.andWhere('job.comapny ILIKE company', { company: `%${company}%` });
@@ -81,53 +87,33 @@ export class JobsService {
     );
   }
 
-  async findOneByIdForAdmin(id: number): Promise<Job> {
-    const job = await this.jobRepo.findOne({
-      where: { id },
-      withDeleted: true,
-    });
-
-    if (!job) throw new NotFoundException('Job not found');
-    return job;
+  async findJobForAdmin(id: number, dto?: AdminSingleJobQueryDto) {
+    return this.findJobById(id, dto?.showDeleted);
   }
 
-  async create(dto: CreateJobDto): Promise<Job> {
+  async createJob(dto: CreateJobDto) {
     const newJob = this.jobRepo.create({ ...dto });
     return await this.jobRepo.save(newJob);
   }
 
-  async update(id: number, dto: UpdateJobDto): Promise<Job> {
-    const job = await this.jobRepo.findOne({
-      where: { id },
-      withDeleted: true,
-    });
-
-    if (!job) throw new NotFoundException('Job not found');
+  async updateJob(id: number, dto: UpdateJobDto) {
+    const job = await this.findJobForAdmin(id);
 
     Object.assign(job, dto);
-    const savedJob = await this.jobRepo.save(job);
+    await this.jobRepo.save(job);
 
-    return savedJob;
+    return this.findJobForAdmin(job.id);
   }
 
-  async restore(id: number): Promise<void> {
+  async restoreJob(id: number) {
     const result = await this.jobRepo.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException('Job not found or already active');
     }
   }
 
-  async delete(id: number, force: boolean = false): Promise<void> {
-    const job = await this.jobRepo.findOne({
-      where: { id },
-      withDeleted: true,
-    });
-    if (!job) throw new NotFoundException('Job not found');
-
-    if (force) {
-      await this.jobRepo.remove(job);
-    } else {
-      await this.jobRepo.softRemove(job);
-    }
+  async deleteJob(id: number) {
+    await this.findJobById(id); // throws 404 if not found
+    await this.jobRepo.softDelete(id);
   }
 }

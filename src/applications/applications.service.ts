@@ -3,76 +3,75 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Application } from './entities/application.entity';
 import { Repository } from 'typeorm';
-import { Job } from 'src/jobs/entites/job.entity';
 import { CreateApplicationDto } from './dtos/create-application.dto';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { User } from 'src/users/entities/user.entity';
 import { PaginationQueryDto } from 'src/common/dtos/pagination/pagination-query.dto';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { UserApplicationDto } from './dtos/user-application.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
 import { AdminApplicationQueryDto } from '../admin/dtos/applications/admin-application-query.dto';
 import { AdminApplicationDto } from '../admin/dtos/applications/admin-application.dto';
+import { UsersService } from 'src/users/users.service';
+import { JobsService } from 'src/jobs/jobs.service';
+import { AdminSingleApplicationQueryDto } from 'src/admin/dtos/applications/admin-single-application-query.dto';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     @InjectRepository(Application)
     private readonly appRepo: Repository<Application>,
-    @InjectRepository(Job)
-    private readonly jobRepo: Repository<Job>,
 
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    private readonly jobsService: JobsService,
+
+    private readonly usersService: UsersService,
   ) {}
 
+  private readonly logger = new Logger(ApplicationsService.name);
+
   // User Methods
-  async create(dto: CreateApplicationDto, safeUser: SafeUser) {
-    const { jobId, coverLetter } = dto;
-    const job = await this.jobRepo.findOne({
-      where: { id: jobId },
-    });
+  async createApplication(dto: CreateApplicationDto, id: number) {
+    try {
+      const { jobId, coverLetter } = dto;
 
-    if (!job) throw new NotFoundException('Job not found');
+      const user = await this.usersService.findUserById(id);
 
-    const user = await this.userRepo.findOne({
-      where: { id: safeUser.id },
-    });
+      if (!user.resumeUrl)
+        throw new BadRequestException(
+          'Please upload your resume before applying',
+        );
 
-    if (!user) throw new NotFoundException('User not found');
+      const job = await this.jobsService.findJobForUser(jobId);
 
-    if (!user.resumeUrl)
-      throw new BadRequestException('Please upload you resume before applying');
+      const exists = await this.appRepo.findOne({
+        where: {
+          user: { id: user.id },
+          job: { id: job.id },
+        },
+      });
 
-    const exists = await this.appRepo.findOne({
-      where: {
-        user: { id: user.id },
-        job: { id: job.id },
-      },
-    });
+      if (exists)
+        throw new ConflictException('You have already applied to this job');
 
-    if (exists)
-      throw new ConflictException('You have already applied to this job');
+      const application = this.appRepo.create({
+        job,
+        user,
+        submittedResumePath: user.resumeUrl,
+        coverLetter,
+      });
 
-    const application = this.appRepo.create({
-      job,
-      user,
-      resumePath: user.resumeUrl,
-      coverLetter,
-    });
-
-    return this.appRepo.save(application);
+      return await this.appRepo.save(application);
+    } catch (error) {
+      this.logger.error(`Error creating application: ${error.message}`);
+      throw error;
+    }
   }
 
-  async findAllMine(
-    user: SafeUser,
-    dto: PaginationQueryDto,
-  ): Promise<Pagination<UserApplicationDto>> {
+  async findAllMyApplications(user: SafeUser, dto: PaginationQueryDto) {
     const qb = this.appRepo
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.job', 'job')
@@ -87,10 +86,12 @@ export class ApplicationsService {
     );
   }
 
-  async findOneByUser(id: number): Promise<Application> {
+  async findApplicationForUser(id: number) {
     const application = await this.appRepo.findOne({
       where: { id },
-      relations: ['job'],
+      relations: {
+        job: true,
+      },
     });
 
     if (!application) throw new NotFoundException('Application not found');
@@ -98,24 +99,23 @@ export class ApplicationsService {
     return application;
   }
 
-  async withdraw(applicationId: number, user: SafeUser): Promise<void> {
+  async withdrawApplication(applicationId: number, user: SafeUser) {
     const application = await this.appRepo.findOne({
       where: { id: applicationId, user: { id: user.id } },
     });
 
-    if (!application) throw new NotFoundException('Applicaiton not found');
+    if (!application) throw new NotFoundException('Application not found');
 
     if (application.deletedAt) {
       throw new ConflictException('Application already withdrawn');
     }
 
-    await this.appRepo.softRemove(application);
+    this.logger.log(`User ${user.id} withdrew application ${applicationId}`);
+    await this.appRepo.softDelete(application.id);
   }
 
   // Admin Methods
-  async findAllApplicationsForAdmin(
-    dto: AdminApplicationQueryDto,
-  ): Promise<Pagination<AdminApplicationDto>> {
+  async findAllApplicationsForAdmin(dto: AdminApplicationQueryDto) {
     const { jobId, userId } = dto;
 
     const qb = this.appRepo
@@ -123,6 +123,10 @@ export class ApplicationsService {
       .leftJoinAndSelect('application.job', 'job')
       .leftJoinAndSelect('application.user', 'user')
       .orderBy('application.createdAt', 'DESC');
+
+    if (dto.showDeleted) {
+      qb.withDeleted();
+    }
 
     if (jobId) {
       qb.andWhere('application.jobId = :jobId', { jobId });
@@ -132,8 +136,6 @@ export class ApplicationsService {
       qb.andWhere('application.userId = :userId', { userId });
     }
 
-    qb.andWhere('job.deletedAt IS NULL');
-
     return paginateAndMap<Application, AdminApplicationDto>(
       qb,
       dto,
@@ -141,26 +143,36 @@ export class ApplicationsService {
     );
   }
 
-  async findOneByAdmin(id: number): Promise<Application> {
+  private async findApplicationById(id: number, includeDeleted = false) {
     const application = await this.appRepo.findOne({
-      where: { id },
-      relations: ['job', 'user'],
+      where: {
+        id,
+      },
+      withDeleted: includeDeleted,
     });
 
-    if (!application) throw new NotFoundException('Application not found');
-
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
     return application;
   }
 
-  async updateStatus(
+  async findApplicationForAdmin(
     id: number,
-    dto: UpdateApplicationStatusDto,
-  ): Promise<Application> {
-    const application = await this.appRepo.findOne({ where: { id } });
-    if (!application) throw new NotFoundException('Application not found');
+    dto?: AdminSingleApplicationQueryDto,
+  ) {
+    return this.findApplicationById(id, dto?.showDeleted);
+  }
+
+  async updateApplicationStatus(id: number, dto: UpdateApplicationStatusDto) {
+    const application = await this.findApplicationById(id);
+
+    if (application.deletedAt) {
+      throw new ConflictException('Cannot update deleted application');
+    }
 
     application.status = dto.status;
-    const savedApplication = await this.appRepo.save(application);
-    return savedApplication;
+    await this.appRepo.save(application);
+    return this.findApplicationById(id);
   }
 }

@@ -1,155 +1,148 @@
-import { PaginationQueryDto } from '../common/dtos/pagination/pagination-query.dto';
+import { AdminSingleUserQueryDto } from './../admin/dtos/users/admin-single-user-query.dto';
+
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../admin/dtos/users/create-user.dto';
-import { UpdateUserDto } from '../admin/dtos/users/update-user.dto';
 import { hash } from 'bcryptjs';
 import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
 import { UpdateProfileDto } from 'src/profiles/dtos/update-profile.dto';
-
-import { join } from 'path';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { RESUME_UPLOADS_DIR } from 'src/common/constatns/file-paths';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { UserDto } from '../common/dtos/user/user.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
+import { deleteFile } from 'utils/delete-file';
+import { SafeUser } from 'src/common/interfaces/safe-user.interface';
+import { AdminUserQueryDto } from 'src/admin/dtos/users/admin-user-query.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
-  async findAll(dto: PaginationQueryDto): Promise<Pagination<UserDto>> {
+  private readonly logger = new Logger(UsersService.name);
+
+  async findAllUsers(dto: AdminUserQueryDto) {
     const qb = this.userRepo
       .createQueryBuilder('user')
       .orderBy('user.id', 'DESC');
 
+    if (dto.showDeleted) {
+      qb.withDeleted();
+    }
+
     return paginateAndMap<User, UserDto>(qb, dto, UserDto);
   }
 
-  async findOneByEmail(email: string): Promise<User> {
+  private async findUser(
+    where: { id?: number; email?: string },
+    includeDeleted = false,
+  ) {
     const user = await this.userRepo.findOne({
-      where: { email },
+      where,
+      withDeleted: includeDeleted,
     });
+
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  async findOneById(id: number): Promise<User> {
-    const user = await this.userRepo.findOne({
-      where: { id },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
+  async findUserByEmail(email: string, dto?: AdminSingleUserQueryDto) {
+    return this.findUser({ email }, dto?.showDeleted);
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const existingUser = await this.userRepo.findOne({
-      where: { email: dto.email },
-    });
+  async findUserById(id: number, dto?: AdminSingleUserQueryDto) {
+    return this.findUser({ id }, dto?.showDeleted);
+  }
 
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
-    }
-
+  async createUser(dto: CreateUserDto) {
     const hashedPassword = await hash(dto.password, 10);
+
     const user = this.userRepo.create({
       ...dto,
       password: hashedPassword,
     });
 
-    const newUser = await this.userRepo.save(user);
-
-    return newUser;
+    try {
+      return await this.userRepo.save(user);
+    } catch (err) {
+      if (err.code === '23505') {
+        throw new ConflictException('Email already exists');
+      }
+      throw err;
+    }
   }
 
-  async update(id: number, dto: UpdateUserDto): Promise<User> {
-    const user = await this.findOneById(id);
-    if (!user) throw new NotFoundException('User not found');
+  // Reusable logic
+  private async updateUserFields(id: number, dto: Partial<User>) {
+    const user = await this.findUserById(id);
 
     if (dto.email && dto.email !== user.email) {
       await this.validateEmail(dto.email, id);
     }
+
     Object.assign(user, dto);
-    const updatedUser = await this.userRepo.save(user);
+    await this.userRepo.save(user);
 
-    return updatedUser;
+    return this.findUserById(id);
   }
 
-  async updateFromProfile(
-    id: number,
-    updateProfileDto: UpdateProfileDto,
-  ): Promise<User> {
-    const user = await this.findOneById(id);
-    if (!user) throw new NotFoundException('User not found');
-
-    if (updateProfileDto.email && updateProfileDto.email !== user.email) {
-      await this.validateEmail(updateProfileDto.email, id);
-    }
-
-    Object.assign(user, updateProfileDto);
-
-    const updatedProfile = await this.userRepo.save(user);
-
-    return updatedProfile;
+  async updateUserProfile(id: number, dto: UpdateProfileDto) {
+    return this.updateUserFields(id, dto);
   }
 
-  async delete(id: number, force: boolean = false): Promise<void> {
-    const user = await this.findOneById(id);
-    if (!user) throw new NotFoundException('User not found');
+  async deleteUser(id: number, currentUser?: SafeUser) {
+    const user = await this.findUser({ id });
 
-    if (user?.resumeUrl) {
-      const fullPath = join(process.cwd(), user.resumeUrl);
-      await fs.access(fullPath);
-      await fs.unlink(fullPath);
+    if (currentUser && currentUser.id === user.id) {
+      throw new ForbiddenException('You cannot delete your own account');
     }
 
-    if (force) {
-      await this.userRepo.remove(user);
-    } else {
-      await this.userRepo.softRemove(user);
+    if (user.resumeUrl) {
+      await deleteFile(user.resumeUrl);
     }
+
+    await this.userRepo.softDelete(id);
   }
 
   async updateRefreshToken(id: number, refreshToken: string) {
-    const user = await this.findOneById(id);
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
+    const user = await this.findUserById(id);
     user.refreshToken = refreshToken;
     return this.userRepo.save(user);
   }
 
-  async changePassword(user: User, dto: ChangePasswordDto): Promise<void> {
+  async changePassword(user: User, dto: ChangePasswordDto) {
     const hashedPassword = await hash(dto.newPassword, 10);
     user.password = hashedPassword;
-    await this.userRepo.save(user);
+    return this.userRepo.save(user);
   }
 
-  async updateResume(userId: number, resumeUrl: string): Promise<void> {
-    const user = await this.findOneById(userId);
-    if (!user) throw new NotFoundException('User not found');
+  async updateUserResume(id: number, resumeUrl: string) {
+    const user = await this.findUserById(id);
 
     if (user.resumeUrl) {
       const oldFilePath = path.join(
         RESUME_UPLOADS_DIR,
         path.basename(user.resumeUrl),
       );
+
       try {
         await fs.access(oldFilePath);
         await fs.unlink(oldFilePath);
-      } catch (err) {
-        console.warn(
-          `Failed to delete old resume at ${oldFilePath}:`,
-          err.message,
+      } catch (error) {
+        this.logger.warn(
+          `Failed to delete old resume at ${oldFilePath}`,
+          error,
         );
       }
     }
@@ -158,22 +151,23 @@ export class UsersService {
     await this.userRepo.save(user);
   }
 
-  private async validateEmail(email: string, userId?: number): Promise<void> {
-    const existingUser = await this.userRepo.findOne({ where: { email } });
+  private async validateEmail(email: string, userId: number) {
+    // Check if user want to update own email with existing one
+    const existing = await this.userRepo.findOne({ where: { email } });
 
-    if (existingUser && existingUser.id !== userId) {
+    if (existing && existing.id !== userId) {
       throw new ConflictException('Email already in use');
     }
   }
 
-  async clearRefreshToken(userId: number): Promise<void> {
-    await this.userRepo.update(userId, { refreshToken: null });
+  async clearRefreshToken(userId: number) {
+    return this.userRepo.update(userId, { refreshToken: null });
   }
 
-  async restore(id: number): Promise<void> {
+  async restoreUser(id: number) {
     const result = await this.userRepo.restore(id);
     if (result.affected === 0) {
-      throw new NotFoundException('Job not found or already active');
+      throw new NotFoundException('User not found or already active');
     }
   }
 }

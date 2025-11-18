@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
@@ -8,48 +13,71 @@ import { TokenPayload } from './interfaces/token-payload.interface';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { User } from 'src/users/entities/user.entity';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import * as ms from 'ms';
 
 @Injectable()
 export class AuthService {
-  private readonly inProduction: boolean;
-
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {
-    this.inProduction =
-      this.configService.getOrThrow('NODE_ENV') === 'production';
-  }
+  ) {}
 
   private readonly logger = new MyLoggerService(AuthService.name);
 
-  async register(dto: RegisterUserDto): Promise<User> {
-    return await this.usersService.create({
+  async register(dto: RegisterUserDto, response: Response) {
+    const newUser = await this.usersService.createUser({
       ...dto,
       role: UserRole.USER,
     });
+    const { accessToken, refreshToken } = await this.generateTokens(newUser);
+    const hashedRefreshToken = await hash(refreshToken, 10);
+    await this.usersService.updateRefreshToken(newUser.id, hashedRefreshToken);
+    await this.setCookies(response, accessToken, refreshToken);
+
+    this.logger.log(
+      `User ${newUser.id} logged in successfully`,
+      AuthService.name,
+    );
+    return {
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        location: newUser.location,
+      },
+    };
   }
 
-  async login(user: SafeUser, response: Response): Promise<void> {
+  async login(user: SafeUser, response: Response) {
     const { accessToken, refreshToken } = await this.generateTokens(user);
     const hashedRefreshToken = await hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
     await this.setCookies(response, accessToken, refreshToken);
     this.logger.log(`User ${user.id} logged in successfully`, AuthService.name);
+    const loggedUser = await this.usersService.findUserById(user.id);
+    return {
+      user: {
+        id: loggedUser.id,
+        email: loggedUser.email,
+        role: loggedUser.role,
+        firstName: loggedUser.firstName,
+        lastName: loggedUser.lastName,
+        location: loggedUser.location,
+      },
+    };
   }
 
-  async logout(response: Response, userId: number): Promise<void> {
+  async logout(response: Response, userId: number) {
     await this.usersService.clearRefreshToken(userId);
     this.clearAuthCookie(response);
   }
 
-  async verifyUser(email: string, password: string): Promise<SafeUser> {
-    const user = await this.usersService.findOneByEmail(email);
-
-    if (!user) throw new UnauthorizedException();
+  async verifyUser(email: string, password: string) {
+    const user = await this.usersService.findUserByEmail(email);
 
     const passwordValid = await compare(password, user.password);
 
@@ -62,11 +90,8 @@ export class AuthService {
     };
   }
 
-  async verifyUserRefreshToken(
-    refreshToken: string,
-    userId: number,
-  ): Promise<SafeUser> {
-    const user = await this.usersService.findOneById(userId);
+  async verifyUserRefreshToken(refreshToken: string, userId: number) {
+    const user = await this.usersService.findUserById(userId);
     if (!user?.refreshToken) throw new UnauthorizedException();
 
     const validToken = await compare(refreshToken, user?.refreshToken);
@@ -83,18 +108,27 @@ export class AuthService {
     response: Response,
     accessToken: string,
     refreshToken: string,
-  ): Promise<void> {
+  ) {
+    const expires = new Date();
+
+    expires.setMilliseconds(
+      expires.getMilliseconds() +
+        ms(
+          this.configService.getOrThrow<string>(
+            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+          ) as unknown as ms.StringValue,
+        ),
+    );
+
     const cookieOptions = {
       httpOnly: true,
-      secure: this.inProduction,
-      sameSite: 'strict' as const,
+      secure: true,
     };
 
     response.cookie('Authentication', accessToken, {
       ...cookieOptions,
-      maxAge: parseInt(
-        this.configService.getOrThrow('JWT_ACCESS_TOKEN_EXPIRATION_MS'),
-      ),
+      expires,
+      sameSite: 'none',
     });
 
     response.cookie('Refresh', refreshToken, {
@@ -105,19 +139,17 @@ export class AuthService {
     });
   }
 
-  private async generateTokens(
-    user: SafeUser,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload: TokenPayload = { userId: user.id.toString() };
+  private async generateTokens(user: SafeUser) {
+    const tokenPayload: TokenPayload = { userId: user.id.toString() };
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
+      this.jwtService.signAsync(tokenPayload, {
         secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
         expiresIn: this.configService.getOrThrow(
           'JWT_ACCESS_TOKEN_EXPIRATION_MS',
         ),
       }),
-      this.jwtService.signAsync(payload, {
+      this.jwtService.signAsync(tokenPayload, {
         secret: this.configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
         expiresIn: this.configService.getOrThrow(
           'JWT_REFRESH_TOKEN_EXPIRATION_MS',
@@ -130,8 +162,7 @@ export class AuthService {
   private clearAuthCookie(response: Response): void {
     const cookieOption = {
       httpOnly: true,
-      secure: this.inProduction,
-      sameSite: 'strict' as const,
+      secure: true,
     };
 
     response.clearCookie('Authentication', cookieOption);

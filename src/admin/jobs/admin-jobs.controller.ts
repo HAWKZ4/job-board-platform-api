@@ -9,34 +9,33 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JobsService } from '../../jobs/jobs.service';
 import { CreateJobDto } from '../../jobs/dtos/create-job.dto';
-import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminJobDto } from './../dtos/jobs/admin-job.dto';
 import { UpdateJobDto } from '../../jobs/dtos/update-job.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminJobQueryDto } from './../dtos/jobs/admin-job-query.dto';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { PaginatedAdminJobsResponseDto } from '../dtos/jobs/paginated-admin-jobs-response.dto';
-import { AdminJobResponseDto } from '../dtos/jobs/admin-job-response.dto';
+import { AdminSingleJobQueryDto } from '../dtos/jobs/admin-single-job-query.dto';
 
 @ApiTags('Admin Jobs')
+@Roles(UserRole.ADMIN)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/jobs')
 export class AdminJobsController {
   constructor(private readonly jobsService: JobsService) {}
@@ -52,22 +51,15 @@ export class AdminJobsController {
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
   })
-  @Roles(UserRole.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  async getAllJobs(
-    @Query() query: AdminJobQueryDto,
-    @Req() req: any,
-  ): Promise<Pagination<AdminJobDto>> {
-    const jobs = await this.jobsService.findAllByAdmin(query);
-    req.customMessage = 'Jobs retrieved successfully';
-    return jobs;
+  async getAllJobs(@Query() query: AdminJobQueryDto) {
+    return this.jobsService.findAllJobsForAdmin(query);
   }
 
   @ApiOperation({ summary: 'Get a job by id (admin only)' })
   @ApiOkResponse({
     description: 'Job with the specified ID was retrieved successfully',
-    type: AdminJobResponseDto,
+    type: AdminJobDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -78,23 +70,18 @@ export class AdminJobsController {
   @ApiNotFoundResponse({
     description: 'Job not found',
   })
-  @Serialize(AdminJobDto)
-  @Roles(UserRole.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
   async getJobById(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
-  ): Promise<AdminJobDto> {
-    const job = await this.jobsService.findOneByIdForAdmin(id);
-    req.customMessage = 'Job retrieved successfully';
-    return job;
+    @Query() query: AdminSingleJobQueryDto,
+  ) {
+    return this.jobsService.findJobForAdmin(id, query);
   }
 
   @ApiOperation({ summary: 'Create a new job (admin only)' })
   @ApiCreatedResponse({
     description: 'Job created successfully',
-    type: AdminJobResponseDto,
+    type: AdminJobDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -102,23 +89,15 @@ export class AdminJobsController {
   @ApiForbiddenResponse({
     description: 'You are not authorized. Admin role is required.',
   })
-  @Serialize(AdminJobDto)
-  @Roles(UserRole.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
-  async createJob(
-    @Body() dto: CreateJobDto,
-    @Req() req: any,
-  ): Promise<AdminJobDto> {
-    const job = await this.jobsService.create(dto);
-    req.customMessage = 'Job created successfully';
-    return job;
+  async createJob(@Body() dto: CreateJobDto) {
+    return this.jobsService.createJob(dto);
   }
 
   @ApiOperation({ summary: 'Update an existing job (admin only)' })
   @ApiOkResponse({
     description: 'Job updated successfully',
-    type: AdminJobResponseDto,
+    type: AdminJobDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -129,30 +108,18 @@ export class AdminJobsController {
   @ApiNotFoundResponse({
     description: 'Job not found',
   })
-  @Serialize(AdminJobDto)
-  @Roles(UserRole.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id')
   async updateJob(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateJobDto,
-    @Req() req: any,
-  ): Promise<AdminJobDto> {
-    const updatedJob = await this.jobsService.update(id, dto);
-    req.customMessage = 'Job updated successfully';
+  ) {
+    const updatedJob = await this.jobsService.updateJob(id, dto);
     return updatedJob;
   }
 
-  @ApiOperation({ summary: 'Delete a job by ID (soft or hard delete)' })
-  @ApiQuery({
-    name: 'force',
-    required: false,
-    enum: ['true', 'false'],
-    description: 'Set to true to force delete the job (hard delete)',
-  })
-  @ApiOkResponse({
-    description:
-      'Job was deleted successfully (soft or hard depending on query param)',
+  @ApiOperation({ summary: 'Delete a job by ID (soft delete)' })
+  @ApiNoContentResponse({
+    description: 'Job was deleted successfully.',
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -163,16 +130,10 @@ export class AdminJobsController {
   @ApiNotFoundResponse({
     description: 'Job not found',
   })
-  @Roles(UserRole.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(204)
   @Delete('/:id')
-  async deleteJob(
-    @Param('id', ParseIntPipe) id: number,
-    @Query('force') force?: 'true' | 'false',
-  ): Promise<void> {
-    const isForceDelete = force === 'true';
-    await this.jobsService.delete(id, isForceDelete);
+  async deleteJob(@Param('id', ParseIntPipe) id: number) {
+    await this.jobsService.deleteJob(id);
   }
 
   @ApiOperation({
@@ -181,7 +142,6 @@ export class AdminJobsController {
   @ApiOkResponse({
     description: 'Job restored successfully',
     example: {
-      statusCode: 200,
       message: 'Job restored successfully',
     },
   })
@@ -194,14 +154,9 @@ export class AdminJobsController {
   @ApiNotFoundResponse({
     description: 'Job not found',
   })
-  @Roles(UserRole.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/restore/:id')
-  async restoreJob(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
-  ): Promise<void> {
-    await this.jobsService.restore(id);
-    req.customMessage = 'Job restored successfully';
+  async restoreJob(@Param('id', ParseIntPipe) id: number) {
+    await this.jobsService.restoreJob(id);
+    return { message: 'Job restored successfully' };
   }
 }

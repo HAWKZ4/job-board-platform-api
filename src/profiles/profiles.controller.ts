@@ -6,11 +6,9 @@ import {
   Delete,
   Get,
   HttpCode,
-  InternalServerErrorException,
   Param,
   Patch,
   Post,
-  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -20,7 +18,6 @@ import { ProfilesService } from './profiles.service';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { ProfileDto } from './dtos/profile.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { User } from 'src/users/entities/user.entity';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { DeleteProfileDto } from './dtos/delete-profile.dto';
@@ -39,16 +36,14 @@ import {
   ApiBody,
   ApiConsumes,
   ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SingleUserResponseDto } from 'src/admin/dtos/users/single-user-response.dto';
-import { ProfileResponseDto } from './dtos/profile-response.dto';
 import { UploadResumeDto } from './dtos/upload-resume.dto';
 
 @ApiTags('Profiles')
@@ -65,7 +60,7 @@ export class ProfilesController {
   @ApiOperation({ summary: 'Get the currently authenticated user' })
   @ApiOkResponse({
     description: 'Authenticated user retrieved successfully',
-    type: SingleUserResponseDto,
+    type: UserDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -76,19 +71,14 @@ export class ProfilesController {
   @Serialize(UserDto)
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  async getMe(
-    @CurrentUser() user: SafeUser,
-    @Req() req: any,
-  ): Promise<UserDto> {
-    const exisitingUser = await this.usersService.findOneById(user.id);
-    req.customMessage = 'Authenticated user retrieved successfully';
-    return exisitingUser;
+  async getMe(@CurrentUser() user: SafeUser) {
+    return this.usersService.findUserById(user.id);
   }
 
   @ApiOperation({ summary: 'Update my profile' })
   @ApiOkResponse({
     description: 'Profile updated successfully',
-    type: ProfileResponseDto,
+    type: ProfileDto,
   })
   @ApiUnauthorizedResponse({
     description: 'You are not authenticated. Please login first.',
@@ -102,21 +92,12 @@ export class ProfilesController {
   async updateProfile(
     @CurrentUser() user: SafeUser,
     @Body() dto: UpdateProfileDto,
-    @Req() req: any,
-  ): Promise<ProfileDto> {
-    const updatedProfile = await this.profilesService.update(user.id, dto);
-    req.customMessage = 'Profile updated successfully';
-    return updatedProfile;
+  ) {
+    return this.profilesService.updateProfile(user.id, dto);
   }
 
   @ApiOperation({ summary: 'Delete my profile' })
-  @ApiQuery({
-    name: 'force',
-    required: false,
-    enum: ['true', 'false'],
-    description: 'Set to true to force delete the job (hard delete)',
-  })
-  @ApiOkResponse({
+  @ApiNoContentResponse({
     description: 'Profile deleted successfully',
   })
   @ApiUnauthorizedResponse({
@@ -129,11 +110,11 @@ export class ProfilesController {
   @HttpCode(204)
   @Delete()
   async deleteProfile(
-    @CurrentUser() user: User,
+    @CurrentUser() user: SafeUser,
     @Body() dto: DeleteProfileDto,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    await this.profilesService.delete(user.id, dto);
+  ) {
+    await this.profilesService.deleteProfile(user.id, dto);
     await this.authService.logout(response, user.id);
   }
 
@@ -141,7 +122,6 @@ export class ProfilesController {
   @ApiOkResponse({
     description: 'Password updated successfully',
     example: {
-      statusCode: 200,
       message: 'Password updated successfully',
     },
   })
@@ -155,12 +135,13 @@ export class ProfilesController {
   @UseGuards(JwtAuthGuard)
   @Patch('/change-password')
   async changePassword(
-    @CurrentUser() user: User,
+    @CurrentUser() user: SafeUser,
     @Body() dto: ChangePasswordDto,
-    @Req() req: any,
-  ): Promise<void> {
+  ) {
     await this.profilesService.changePassword(user.id, dto);
-    req.customMessage = 'Password updated successfully';
+    return {
+      message: 'Password updated successfully',
+    };
   }
 
   @ApiOperation({ summary: 'Upload or replace user resume (PDF only)' })
@@ -174,7 +155,6 @@ export class ProfilesController {
       'Resume uploaded successfully (existing resume will be replaced if exists)',
     schema: {
       example: {
-        statusCode: 200,
         message: 'Resume uploaded successfully',
       },
     },
@@ -194,7 +174,7 @@ export class ProfilesController {
         destination: RESUME_UPLOADS_DIR,
       }),
       limits: {
-        fileSize: 1000 * 1000 * 5, // 5MB
+        fileSize: 1024 * 1024 * 5, // 5MB
       },
       fileFilter: pdfFileFilter,
     }),
@@ -202,8 +182,7 @@ export class ProfilesController {
   async uploadResume(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: SafeUser,
-    @Req() req: any,
-  ): Promise<void> {
+  ) {
     if (!file) throw new BadRequestException('No file uploaded');
 
     const relativeResumePath = `/uploads/resumes/${file.filename}`;
@@ -214,7 +193,9 @@ export class ProfilesController {
     );
 
     await this.profilesService.updateUserResumeUrl(user.id, relativeResumePath);
-    req.customMessage = 'Resume uploaded successfully';
+    return {
+      message: 'Resume uploaded successfully',
+    };
   }
 
   @ApiOperation({
@@ -223,7 +204,7 @@ export class ProfilesController {
   @ApiParam({
     name: 'filename',
     description: 'The filename of the resume to retrieve',
-    example: 'resume_123.pdf',
+    example: 'resume-123.pdf',
   })
   @ApiOkResponse({
     description: 'PDF resume file served successfully',
@@ -249,23 +230,7 @@ export class ProfilesController {
     @Param('filename') filename: string,
     @CurrentUser() user: SafeUser,
     @Res() response: Response,
-  ): Promise<void> {
-    const filePath = await this.profilesService.verifyUserResumeAccess(
-      user,
-      filename,
-    );
-
-    response.setHeader('Content-Type', 'application/pdf');
-    response.setHeader('Content-Disposition', `inline; filename="${filename}"`);
-
-    return new Promise<void>((resolve, reject) => {
-      response.sendFile(filePath, (err) => {
-        if (err) {
-          reject(new InternalServerErrorException('File delivery failed'));
-        } else {
-          resolve();
-        }
-      });
-    });
+  ) {
+    return this.profilesService.serveResume(filename, user, response);
   }
 }
