@@ -18,7 +18,7 @@ export class JobsService {
   ) {}
 
   // User-Methods
-  async findAllJobsForUser(dto: PaginationQueryDto) {
+  async findAllForUser(dto: PaginationQueryDto) {
     const { page = 1, limit = 10 } = dto;
 
     const qb = this.jobRepo
@@ -36,7 +36,7 @@ export class JobsService {
     );
   }
 
-  private async findJobById(id: number, includeDeleted = false) {
+  private async findOneById(id: number, includeDeleted = false) {
     const job = await this.jobRepo.findOne({
       where: {
         id,
@@ -50,12 +50,12 @@ export class JobsService {
     return job;
   }
 
-  async findJobForUser(id: number) {
-    return this.findJobById(id);
+  async findOneForUser(id: number) {
+    return this.findOneById(id);
   }
 
   // Admin-Methods
-  async findAllJobsForAdmin(dto: AdminJobQueryDto) {
+  async findAllForAdmin(dto: AdminJobQueryDto) {
     const { page = 1, limit = 10, showDeleted, company, location, title } = dto;
 
     const qb = this.jobRepo
@@ -87,33 +87,33 @@ export class JobsService {
     );
   }
 
-  async findJobForAdmin(id: number, dto?: AdminSingleJobQueryDto) {
-    return this.findJobById(id, dto?.showDeleted);
+  async findOneForAdmin(id: number, dto?: AdminSingleJobQueryDto) {
+    return this.findOneById(id, dto?.showDeleted);
   }
 
-  async createJob(dto: CreateJobDto) {
+  async create(dto: CreateJobDto) {
     const newJob = this.jobRepo.create({ ...dto });
     return await this.jobRepo.save(newJob);
   }
 
-  async updateJob(id: number, dto: UpdateJobDto) {
-    const job = await this.findJobForAdmin(id);
+  async update(id: number, dto: UpdateJobDto) {
+    const job = await this.findOneForAdmin(id);
 
     Object.assign(job, dto);
     await this.jobRepo.save(job);
 
-    return this.findJobForAdmin(job.id);
+    return this.findOneForAdmin(job.id);
   }
 
-  async restoreJob(id: number) {
+  async restoreForAdmin(id: number) {
     const result = await this.jobRepo.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException('Job not found or already active');
     }
   }
 
-  async deleteJob(id: number) {
-    await this.findJobById(id); // throws 404 if not found
+  async softDeleteForAdmin(id: number) {
+    await this.findOneById(id); // throws 404 if not found
     await this.jobRepo.softDelete(id);
   }
 }

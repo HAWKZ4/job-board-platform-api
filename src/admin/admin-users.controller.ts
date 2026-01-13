@@ -28,8 +28,8 @@ import { PaginatedUsersResponseDto } from 'src/admin/dtos/users/paginated-users-
 import { UsersService } from 'src/users/users.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
-import { AdminUserQueryDto } from '../dtos/users/admin-user-query.dto';
-import { AdminSingleUserQueryDto } from '../dtos/users/admin-single-user-query.dto';
+import { AdminUserQueryDto } from './dtos/users/admin-user-query.dto';
+import { AdminSingleUserQueryDto } from './dtos/users/admin-single-user-query.dto';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @ApiTags('Admin Users')
@@ -53,7 +53,7 @@ export class AdminUsersController {
   })
   @Get()
   async getAllUsers(@Query() query: AdminUserQueryDto) {
-    return this.usersService.findAllUsers(query);
+    return this.usersService.findAll(query);
   }
 
   @ApiOperation({ summary: 'Get a user by email (admin only)' })
@@ -76,7 +76,7 @@ export class AdminUsersController {
     @Param('email') email: string,
     @Query() query: AdminSingleUserQueryDto,
   ) {
-    return this.usersService.findUserByEmail(email, query);
+    return this.usersService.findOneByEmail(email, query);
   }
 
   @ApiOperation({ summary: 'Get a user by ID (admin only)' })
@@ -99,7 +99,7 @@ export class AdminUsersController {
     @Param('id', ParseIntPipe) id: number,
     @Query() query: AdminSingleUserQueryDto,
   ) {
-    return this.usersService.findUserById(id, query);
+    return this.usersService.findOneById(id, query);
   }
 
   @ApiOperation({ summary: 'Delete a user by ID (soft delete)' })
@@ -121,7 +121,7 @@ export class AdminUsersController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: SafeUser,
   ) {
-    await this.usersService.deleteUser(id, user);
+    await this.usersService.softDelete(id, user);
     this.logger.log(`Admin ${user.id} deleted user: ${id}`);
   }
 
@@ -145,7 +145,7 @@ export class AdminUsersController {
   })
   @Patch('/restore/:id')
   async restoreUser(@Param('id', ParseIntPipe) id: number) {
-    await this.usersService.restoreUser(id);
+    await this.usersService.restoreByAdmin(id);
     return {
       message: 'User restored successfully',
     };

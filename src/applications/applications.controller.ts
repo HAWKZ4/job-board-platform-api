@@ -59,7 +59,7 @@ export class ApplicationsController {
       ApplicationsService.name,
     );
 
-    return this.applicationsService.createApplication(dto, user.id);
+    return this.applicationsService.create(dto, user.id);
   }
 
   @ApiOperation({ summary: 'Get all my applications' })
@@ -77,7 +77,7 @@ export class ApplicationsController {
     @CurrentUser() user: SafeUser,
     @Query() query: PaginationQueryDto,
   ) {
-    return this.applicationsService.findAllMyApplications(user, query);
+    return this.applicationsService.findAll(user, query);
   }
 
   @ApiOperation({ summary: 'Get an application by ID' })
@@ -95,7 +95,7 @@ export class ApplicationsController {
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
   async getApplication(@Param('id', ParseIntPipe) id: number) {
-    return this.applicationsService.findApplicationForUser(id);
+    return this.applicationsService.findOneForUser(id);
   }
 
   @ApiOperation({ summary: 'Delete an Application by ID (soft delete)' })
@@ -115,6 +115,6 @@ export class ApplicationsController {
     @CurrentUser() user: SafeUser,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    await this.applicationsService.withdrawApplication(id, user);
+    await this.applicationsService.withdraw(id, user);
   }
 }

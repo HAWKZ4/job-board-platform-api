@@ -34,18 +34,18 @@ export class ApplicationsService {
   private readonly logger = new Logger(ApplicationsService.name);
 
   // User Methods
-  async createApplication(dto: CreateApplicationDto, id: number) {
+  async create(dto: CreateApplicationDto, id: number) {
     try {
       const { jobId, coverLetter } = dto;
 
-      const user = await this.usersService.findUserById(id);
+      const user = await this.usersService.findOneById(id);
 
       if (!user.resumeUrl)
         throw new BadRequestException(
           'Please upload your resume before applying',
         );
 
-      const job = await this.jobsService.findJobForUser(jobId);
+      const job = await this.jobsService.findOneForUser(jobId);
 
       const exists = await this.appRepo.findOne({
         where: {
@@ -71,7 +71,7 @@ export class ApplicationsService {
     }
   }
 
-  async findAllMyApplications(user: SafeUser, dto: PaginationQueryDto) {
+  async findAll(user: SafeUser, dto: PaginationQueryDto) {
     const qb = this.appRepo
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.job', 'job')
@@ -86,7 +86,7 @@ export class ApplicationsService {
     );
   }
 
-  async findApplicationForUser(id: number) {
+  async findOneForUser(id: number) {
     const application = await this.appRepo.findOne({
       where: { id },
       relations: {
@@ -99,7 +99,7 @@ export class ApplicationsService {
     return application;
   }
 
-  async withdrawApplication(applicationId: number, user: SafeUser) {
+  async withdraw(applicationId: number, user: SafeUser) {
     const application = await this.appRepo.findOne({
       where: { id: applicationId, user: { id: user.id } },
     });
@@ -115,7 +115,7 @@ export class ApplicationsService {
   }
 
   // Admin Methods
-  async findAllApplicationsForAdmin(dto: AdminApplicationQueryDto) {
+  async findAllForAdmin(dto: AdminApplicationQueryDto) {
     const { jobId, userId } = dto;
 
     const qb = this.appRepo
@@ -143,7 +143,7 @@ export class ApplicationsService {
     );
   }
 
-  private async findApplicationById(id: number, includeDeleted = false) {
+  private async findOneById(id: number, includeDeleted = false) {
     const application = await this.appRepo.findOne({
       where: {
         id,
@@ -157,15 +157,12 @@ export class ApplicationsService {
     return application;
   }
 
-  async findApplicationForAdmin(
-    id: number,
-    dto?: AdminSingleApplicationQueryDto,
-  ) {
-    return this.findApplicationById(id, dto?.showDeleted);
+  async findOneForAdmin(id: number, dto?: AdminSingleApplicationQueryDto) {
+    return this.findOneById(id, dto?.showDeleted);
   }
 
-  async updateApplicationStatus(id: number, dto: UpdateApplicationStatusDto) {
-    const application = await this.findApplicationById(id);
+  async updateStatus(id: number, dto: UpdateApplicationStatusDto) {
+    const application = await this.findOneById(id);
 
     if (application.deletedAt) {
       throw new ConflictException('Cannot update deleted application');
@@ -173,6 +170,6 @@ export class ApplicationsService {
 
     application.status = dto.status;
     await this.appRepo.save(application);
-    return this.findApplicationById(id);
+    return this.findOneById(id);
   }
 }

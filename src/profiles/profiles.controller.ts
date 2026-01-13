@@ -72,7 +72,7 @@ export class ProfilesController {
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   async getMe(@CurrentUser() user: SafeUser) {
-    return this.usersService.findUserById(user.id);
+    return this.usersService.findOneById(user.id);
   }
 
   @ApiOperation({ summary: 'Update my profile' })
@@ -93,7 +93,7 @@ export class ProfilesController {
     @CurrentUser() user: SafeUser,
     @Body() dto: UpdateProfileDto,
   ) {
-    return this.profilesService.updateProfile(user.id, dto);
+    return this.profilesService.update(user.id, dto);
   }
 
   @ApiOperation({ summary: 'Delete my profile' })
@@ -114,7 +114,7 @@ export class ProfilesController {
     @Body() dto: DeleteProfileDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    await this.profilesService.deleteProfile(user.id, dto);
+    await this.profilesService.softDelete(user.id, dto);
     await this.authService.logout(response, user.id);
   }
 

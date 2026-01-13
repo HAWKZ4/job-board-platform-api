@@ -1,5 +1,4 @@
 import { AdminSingleUserQueryDto } from './../admin/dtos/users/admin-single-user-query.dto';
-
 import {
   ConflictException,
   ForbiddenException,
@@ -15,13 +14,13 @@ import { hash } from 'bcryptjs';
 import { ChangePasswordDto } from 'src/profiles/dtos/change-password.dto';
 import { UpdateProfileDto } from 'src/profiles/dtos/update-profile.dto';
 import { promises as fs } from 'fs';
-import * as path from 'path';
 import { RESUME_UPLOADS_DIR } from 'src/common/constatns/file-paths';
 import { UserDto } from '../common/dtos/user/user.dto';
 import { paginateAndMap } from 'src/common/utils/pagination';
 import { deleteFile } from 'utils/delete-file';
 import { SafeUser } from 'src/common/interfaces/safe-user.interface';
 import { AdminUserQueryDto } from 'src/admin/dtos/users/admin-user-query.dto';
+import * as path from 'path';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +31,7 @@ export class UsersService {
 
   private readonly logger = new Logger(UsersService.name);
 
-  async findAllUsers(dto: AdminUserQueryDto) {
+  async findAll(dto: AdminUserQueryDto) {
     const qb = this.userRepo
       .createQueryBuilder('user')
       .orderBy('user.id', 'DESC');
@@ -57,15 +56,15 @@ export class UsersService {
     return user;
   }
 
-  async findUserByEmail(email: string, dto?: AdminSingleUserQueryDto) {
+  async findOneByEmail(email: string, dto?: AdminSingleUserQueryDto) {
     return this.findUser({ email }, dto?.showDeleted);
   }
 
-  async findUserById(id: number, dto?: AdminSingleUserQueryDto) {
+  async findOneById(id: number, dto?: AdminSingleUserQueryDto) {
     return this.findUser({ id }, dto?.showDeleted);
   }
 
-  async createUser(dto: CreateUserDto) {
+  async create(dto: CreateUserDto) {
     const hashedPassword = await hash(dto.password, 10);
 
     const user = this.userRepo.create({
@@ -84,8 +83,8 @@ export class UsersService {
   }
 
   // Reusable logic
-  private async updateUserFields(id: number, dto: Partial<User>) {
-    const user = await this.findUserById(id);
+  private async updateFields(id: number, dto: Partial<User>) {
+    const user = await this.findOneById(id);
 
     if (dto.email && dto.email !== user.email) {
       await this.validateEmail(dto.email, id);
@@ -94,14 +93,14 @@ export class UsersService {
     Object.assign(user, dto);
     await this.userRepo.save(user);
 
-    return this.findUserById(id);
+    return this.findOneById(id);
   }
 
-  async updateUserProfile(id: number, dto: UpdateProfileDto) {
-    return this.updateUserFields(id, dto);
+  async updateProfile(id: number, dto: UpdateProfileDto) {
+    return this.updateFields(id, dto);
   }
 
-  async deleteUser(id: number, currentUser?: SafeUser) {
+  async softDelete(id: number, currentUser?: SafeUser) {
     const user = await this.findUser({ id });
 
     if (currentUser && currentUser.id === user.id) {
@@ -116,7 +115,7 @@ export class UsersService {
   }
 
   async updateRefreshToken(id: number, refreshToken: string) {
-    const user = await this.findUserById(id);
+    const user = await this.findOneById(id);
     user.refreshToken = refreshToken;
     return this.userRepo.save(user);
   }
@@ -127,8 +126,8 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async updateUserResume(id: number, resumeUrl: string) {
-    const user = await this.findUserById(id);
+  async updateResume(id: number, resumeUrl: string) {
+    const user = await this.findOneById(id);
 
     if (user.resumeUrl) {
       const oldFilePath = path.join(
@@ -164,7 +163,7 @@ export class UsersService {
     return this.userRepo.update(userId, { refreshToken: null });
   }
 
-  async restoreUser(id: number) {
+  async restoreByAdmin(id: number) {
     const result = await this.userRepo.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException('User not found or already active');

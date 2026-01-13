@@ -23,7 +23,7 @@ export class JobsController {
   })
   @Get()
   async getAllJobs(@Query() query: PaginationQueryDto) {
-    return this.jobsService.findAllJobsForUser(query);
+    return this.jobsService.findAllForUser(query);
   }
 
   @ApiOperation({ summary: 'Get a specific job by ID (user)' })
@@ -37,6 +37,6 @@ export class JobsController {
   @Serialize(UserJobDto)
   @Get('/:id')
   async getJobById(@Param('id', ParseIntPipe) id: number) {
-    return this.jobsService.findJobForUser(id);
+    return this.jobsService.findOneForUser(id);
   }
 }

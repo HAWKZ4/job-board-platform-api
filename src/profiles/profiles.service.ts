@@ -31,21 +31,21 @@ export class ProfilesService {
 
   private readonly logger = new Logger(ProfilesService.name);
 
-  async updateProfile(id: number, dto: UpdateProfileDto) {
-    return this.usersService.updateUserProfile(id, dto);
+  async update(id: number, dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(id, dto);
   }
 
-  async deleteProfile(id: number, dto: DeleteProfileDto) {
-    const user = await this.usersService.findUserById(id);
+  async softDelete(id: number, dto: DeleteProfileDto) {
+    const user = await this.usersService.findOneById(id);
 
     const isMatch = await compare(dto.password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid password');
 
-    await this.usersService.deleteUser(user.id);
+    await this.usersService.softDelete(user.id);
   }
 
   async changePassword(id: number, dto: ChangePasswordDto) {
-    const user = await this.usersService.findUserById(id);
+    const user = await this.usersService.findOneById(id);
 
     const isMatch = await compare(dto.currentPassword, user.password);
 
@@ -55,7 +55,7 @@ export class ProfilesService {
   }
 
   async updateUserResumeUrl(userId: number, resumeUrl: string) {
-    await this.usersService.updateUserResume(userId, resumeUrl);
+    await this.usersService.updateResume(userId, resumeUrl);
   }
 
   async verifyUserResumeAccess(user: SafeUser, filename: string) {
@@ -77,7 +77,7 @@ export class ProfilesService {
       throw new NotFoundException('Resume not found');
     }
 
-    const userWithInfo = await this.usersService.findUserById(user.id);
+    const userWithInfo = await this.usersService.findOneById(user.id);
 
     this.checkUserAuthorization(userWithInfo, filename);
 

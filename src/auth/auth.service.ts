@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
@@ -27,7 +22,7 @@ export class AuthService {
   private readonly logger = new MyLoggerService(AuthService.name);
 
   async register(dto: RegisterUserDto, response: Response) {
-    const newUser = await this.usersService.createUser({
+    const newUser = await this.usersService.create({
       ...dto,
       role: UserRole.USER,
     });
@@ -58,7 +53,7 @@ export class AuthService {
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
     await this.setCookies(response, accessToken, refreshToken);
     this.logger.log(`User ${user.id} logged in successfully`, AuthService.name);
-    const loggedUser = await this.usersService.findUserById(user.id);
+    const loggedUser = await this.usersService.findOneById(user.id);
     return {
       user: {
         id: loggedUser.id,
@@ -77,7 +72,7 @@ export class AuthService {
   }
 
   async verifyUser(email: string, password: string) {
-    const user = await this.usersService.findUserByEmail(email);
+    const user = await this.usersService.findOneByEmail(email);
 
     const passwordValid = await compare(password, user.password);
 
@@ -91,7 +86,7 @@ export class AuthService {
   }
 
   async verifyUserRefreshToken(refreshToken: string, userId: number) {
-    const user = await this.usersService.findUserById(userId);
+    const user = await this.usersService.findOneById(userId);
     if (!user?.refreshToken) throw new UnauthorizedException();
 
     const validToken = await compare(refreshToken, user?.refreshToken);

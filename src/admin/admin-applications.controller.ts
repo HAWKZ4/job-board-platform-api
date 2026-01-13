@@ -8,15 +8,15 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApplicationsService } from '../../applications/applications.service';
+import { ApplicationsService } from '../applications/applications.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { AdminApplicationDto } from '../dtos/applications/admin-application.dto';
+import { AdminApplicationDto } from './dtos/applications/admin-application.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { UpdateApplicationStatusDto } from '../../applications/dtos/update-application-status.dto';
-import { AdminApplicationQueryDto } from '../dtos/applications/admin-application-query.dto';
+import { UpdateApplicationStatusDto } from '../applications/dtos/update-application-status.dto';
+import { AdminApplicationQueryDto } from './dtos/applications/admin-application-query.dto';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -25,8 +25,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PaginatedAdminApplicationsResponseDto } from '../dtos/applications/paginated-admin-applications-response.dto';
-import { AdminSingleApplicationQueryDto } from '../dtos/applications/admin-single-application-query.dto';
+import { PaginatedAdminApplicationsResponseDto } from './dtos/applications/paginated-admin-applications-response.dto';
+import { AdminSingleApplicationQueryDto } from './dtos/applications/admin-single-application-query.dto';
 
 @ApiTags('Admin Applications')
 @Roles(UserRole.ADMIN)
@@ -49,7 +49,7 @@ export class AdminApplicationsController {
   })
   @Get()
   async getAllApplications(@Query() query: AdminApplicationQueryDto) {
-    return this.applicationsService.findAllApplicationsForAdmin(query);
+    return this.applicationsService.findAllForAdmin(query);
   }
 
   @ApiOperation({ summary: 'Get an application by ID (admin only)' })
@@ -72,7 +72,7 @@ export class AdminApplicationsController {
     @Param('id', ParseIntPipe) id: number,
     @Query() query?: AdminSingleApplicationQueryDto,
   ) {
-    return this.applicationsService.findApplicationForAdmin(id, query);
+    return this.applicationsService.findOneForAdmin(id, query);
   }
 
   @ApiOperation({
@@ -97,6 +97,6 @@ export class AdminApplicationsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateApplicationStatusDto,
   ) {
-    return this.applicationsService.updateApplicationStatus(id, dto);
+    return this.applicationsService.updateStatus(id, dto);
   }
 }

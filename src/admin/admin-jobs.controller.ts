@@ -11,15 +11,15 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { JobsService } from '../../jobs/jobs.service';
-import { CreateJobDto } from '../../jobs/dtos/create-job.dto';
-import { AdminJobDto } from './../dtos/jobs/admin-job.dto';
-import { UpdateJobDto } from '../../jobs/dtos/update-job.dto';
+import { JobsService } from '../jobs/jobs.service';
+import { CreateJobDto } from '../jobs/dtos/create-job.dto';
+import { AdminJobDto } from './dtos/jobs/admin-job.dto';
+import { UpdateJobDto } from '../jobs/dtos/update-job.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { AdminJobQueryDto } from './../dtos/jobs/admin-job-query.dto';
+import { AdminJobQueryDto } from './dtos/jobs/admin-job-query.dto';
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -30,8 +30,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PaginatedAdminJobsResponseDto } from '../dtos/jobs/paginated-admin-jobs-response.dto';
-import { AdminSingleJobQueryDto } from '../dtos/jobs/admin-single-job-query.dto';
+import { PaginatedAdminJobsResponseDto } from './dtos/jobs/paginated-admin-jobs-response.dto';
+import { AdminSingleJobQueryDto } from './dtos/jobs/admin-single-job-query.dto';
 
 @ApiTags('Admin Jobs')
 @Roles(UserRole.ADMIN)
@@ -53,7 +53,7 @@ export class AdminJobsController {
   })
   @Get()
   async getAllJobs(@Query() query: AdminJobQueryDto) {
-    return this.jobsService.findAllJobsForAdmin(query);
+    return this.jobsService.findAllForAdmin(query);
   }
 
   @ApiOperation({ summary: 'Get a job by id (admin only)' })
@@ -75,7 +75,7 @@ export class AdminJobsController {
     @Param('id', ParseIntPipe) id: number,
     @Query() query: AdminSingleJobQueryDto,
   ) {
-    return this.jobsService.findJobForAdmin(id, query);
+    return this.jobsService.findOneForAdmin(id, query);
   }
 
   @ApiOperation({ summary: 'Create a new job (admin only)' })
@@ -91,7 +91,7 @@ export class AdminJobsController {
   })
   @Post()
   async createJob(@Body() dto: CreateJobDto) {
-    return this.jobsService.createJob(dto);
+    return this.jobsService.create(dto);
   }
 
   @ApiOperation({ summary: 'Update an existing job (admin only)' })
@@ -113,7 +113,7 @@ export class AdminJobsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateJobDto,
   ) {
-    const updatedJob = await this.jobsService.updateJob(id, dto);
+    const updatedJob = await this.jobsService.update(id, dto);
     return updatedJob;
   }
 
@@ -133,7 +133,7 @@ export class AdminJobsController {
   @HttpCode(204)
   @Delete('/:id')
   async deleteJob(@Param('id', ParseIntPipe) id: number) {
-    await this.jobsService.deleteJob(id);
+    await this.jobsService.softDeleteForAdmin(id);
   }
 
   @ApiOperation({
@@ -156,7 +156,7 @@ export class AdminJobsController {
   })
   @Patch('/restore/:id')
   async restoreJob(@Param('id', ParseIntPipe) id: number) {
-    await this.jobsService.restoreJob(id);
+    await this.jobsService.restoreForAdmin(id);
     return { message: 'Job restored successfully' };
   }
 }
