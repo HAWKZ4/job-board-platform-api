@@ -72,7 +72,7 @@ export class ProfilesController {
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   async getMe(@CurrentUser() user: SafeUser) {
-    return this.usersService.findOneById(user.id);
+    return this.usersService.getPublicUserById(user.id);
   }
 
   @ApiOperation({ summary: 'Update my profile' })

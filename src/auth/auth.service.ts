@@ -53,7 +53,7 @@ export class AuthService {
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
     await this.setCookies(response, accessToken, refreshToken);
     this.logger.log(`User ${user.id} logged in successfully`, AuthService.name);
-    const loggedUser = await this.usersService.findOneById(user.id);
+    const loggedUser = await this.usersService.getPublicUserById(user.id);
     return {
       user: {
         id: loggedUser.id,
@@ -72,7 +72,7 @@ export class AuthService {
   }
 
   async verifyUser(email: string, password: string) {
-    const user = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.getUserWithSecretsByEmail(email);
 
     const passwordValid = await compare(password, user.password);
 
@@ -86,7 +86,7 @@ export class AuthService {
   }
 
   async verifyUserRefreshToken(refreshToken: string, userId: number) {
-    const user = await this.usersService.findOneById(userId);
+    const user = await this.usersService.getUserWithSecretsById(userId);
     if (!user?.refreshToken) throw new UnauthorizedException();
 
     const validToken = await compare(refreshToken, user?.refreshToken);

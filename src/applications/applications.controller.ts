@@ -94,8 +94,11 @@ export class ApplicationsController {
   @Serialize(UserApplicationDto)
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
-  async getApplication(@Param('id', ParseIntPipe) id: number) {
-    return this.applicationsService.findOneForUser(id);
+  async getApplication(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: SafeUser,
+  ) {
+    return this.applicationsService.findOneForUser(id, user);
   }
 
   @ApiOperation({ summary: 'Delete an Application by ID (soft delete)' })

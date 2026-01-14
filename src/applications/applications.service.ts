@@ -38,7 +38,7 @@ export class ApplicationsService {
     try {
       const { jobId, coverLetter } = dto;
 
-      const user = await this.usersService.findOneById(id);
+      const user = await this.usersService.getPublicUserById(id);
 
       if (!user.resumeUrl)
         throw new BadRequestException(
@@ -86,12 +86,10 @@ export class ApplicationsService {
     );
   }
 
-  async findOneForUser(id: number) {
+  async findOneForUser(id: number, user: SafeUser) {
     const application = await this.appRepo.findOne({
-      where: { id },
-      relations: {
-        job: true,
-      },
+      where: { id, user: { id: user.id } },
+      relations: { job: true },
     });
 
     if (!application) throw new NotFoundException('Application not found');

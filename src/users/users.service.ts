@@ -31,45 +31,115 @@ export class UsersService {
 
   private readonly logger = new Logger(UsersService.name);
 
-  async findAll(dto: AdminUserQueryDto) {
+  /* -------------------------------------------------------------------------- */
+  /*                                  ADMIN                                     */
+  /* -------------------------------------------------------------------------- */
+
+  async getAllForAdmin(dto: AdminUserQueryDto) {
     const qb = this.userRepo
       .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.firstName',
+        'user.lastName',
+        'user.role',
+        'user.createdAt',
+        'user.deletedAt',
+      ])
       .orderBy('user.id', 'DESC');
 
-    if (dto.showDeleted) {
-      qb.withDeleted();
-    }
+    if (dto.showDeleted) qb.withDeleted();
 
     return paginateAndMap<User, UserDto>(qb, dto, UserDto);
   }
 
-  private async findUser(
+  async getUserForAdminById(id: number, showDeleted = false) {
+    return this.getUserForAdmin({ id }, showDeleted);
+  }
+
+  async getUserForAdminByEmail(email: string, showDeleted = false) {
+    return this.getUserForAdmin({ email }, showDeleted);
+  }
+
+  private async getUserForAdmin(
     where: { id?: number; email?: string },
-    includeDeleted = false,
+    showDeleted = false,
   ) {
-    const user = await this.userRepo.findOne({
-      where,
-      withDeleted: includeDeleted,
-    });
+    const qb = this.userRepo
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.firstName',
+        'user.lastName',
+        'user.location',
+        'user.role',
+        'user.resumeUrl',
+        'user.createdAt',
+        'user.deletedAt',
+      ])
+      .where(where);
+
+    if (showDeleted) qb.withDeleted();
+
+    const user = await qb.getOne();
+    if (!user) throw new NotFoundException('User not found');
+
+    return user;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  AUTH                                      */
+  /* -------------------------------------------------------------------------- */
+
+  /**
+   * INTERNAL AUTH USE ONLY
+   * Includes password + refreshToken
+   * Never expose to controllers directly
+   */
+
+  async getUserWithSecretsByEmail(email: string) {
+    return this.getUserWithSecrets({ email });
+  }
+
+  async getUserWithSecretsById(id: number) {
+    return this.getUserWithSecrets({ id });
+  }
+
+  //***********//
+
+  private async getUserWithSecrets(where: { id?: number; email?: string }) {
+    const user = await this.userRepo
+      .createQueryBuilder('user')
+      .addSelect(['user.password', 'user.refreshToken'])
+      .where(where)
+      .getOne();
 
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  async findOneByEmail(email: string, dto?: AdminSingleUserQueryDto) {
-    return this.findUser({ email }, dto?.showDeleted);
+  async updateRefreshToken(userId: number, token: string | null) {
+    await this.userRepo.update(userId, { refreshToken: token });
   }
 
-  async findOneById(id: number, dto?: AdminSingleUserQueryDto) {
-    return this.findUser({ id }, dto?.showDeleted);
+  async clearRefreshToken(userId: number): Promise<void> {
+    await this.userRepo.update(userId, { refreshToken: null });
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                               PUBLIC / USER                                */
+  /* -------------------------------------------------------------------------- */
+
+  async getPublicUserById(id: number) {
+    return this.getUserOrFail({ id });
   }
 
   async create(dto: CreateUserDto) {
-    const hashedPassword = await hash(dto.password, 10);
-
     const user = this.userRepo.create({
       ...dto,
-      password: hashedPassword,
+      password: await hash(dto.password, 10),
     });
 
     try {
@@ -82,67 +152,32 @@ export class UsersService {
     }
   }
 
-  // Reusable logic
-  private async updateFields(id: number, dto: Partial<User>) {
-    const user = await this.findOneById(id);
+  async updateProfileFields(userId: number, dto: UpdateProfileDto) {
+    const user = await this.getUserOrFail({ id: userId });
 
     if (dto.email && dto.email !== user.email) {
-      await this.validateEmail(dto.email, id);
+      await this.ensureEmailAvailable(dto.email, userId);
     }
 
     Object.assign(user, dto);
-    await this.userRepo.save(user);
-
-    return this.findOneById(id);
-  }
-
-  async updateProfile(id: number, dto: UpdateProfileDto) {
-    return this.updateFields(id, dto);
-  }
-
-  async softDelete(id: number, currentUser?: SafeUser) {
-    const user = await this.findUser({ id });
-
-    if (currentUser && currentUser.id === user.id) {
-      throw new ForbiddenException('You cannot delete your own account');
-    }
-
-    if (user.resumeUrl) {
-      await deleteFile(user.resumeUrl);
-    }
-
-    await this.userRepo.softDelete(id);
-  }
-
-  async updateRefreshToken(id: number, refreshToken: string) {
-    const user = await this.findOneById(id);
-    user.refreshToken = refreshToken;
     return this.userRepo.save(user);
   }
 
-  async changePassword(user: User, dto: ChangePasswordDto) {
-    const hashedPassword = await hash(dto.newPassword, 10);
-    user.password = hashedPassword;
+  async changePassword(user: User, newPassword: string) {
+    user.password = await hash(newPassword, 10);
     return this.userRepo.save(user);
   }
 
-  async updateResume(id: number, resumeUrl: string) {
-    const user = await this.findOneById(id);
+  async updateResume(userId: number, resumeUrl: string) {
+    const user = await this.getUserOrFail({ id: userId });
 
     if (user.resumeUrl) {
-      const oldFilePath = path.join(
-        RESUME_UPLOADS_DIR,
-        path.basename(user.resumeUrl),
-      );
-
       try {
-        await fs.access(oldFilePath);
-        await fs.unlink(oldFilePath);
-      } catch (error) {
-        this.logger.warn(
-          `Failed to delete old resume at ${oldFilePath}`,
-          error,
+        await fs.unlink(
+          path.join(RESUME_UPLOADS_DIR, path.basename(user.resumeUrl)),
         );
+      } catch {
+        this.logger.warn('Failed to delete old resume');
       }
     }
 
@@ -150,23 +185,45 @@ export class UsersService {
     await this.userRepo.save(user);
   }
 
-  private async validateEmail(email: string, userId: number) {
-    // Check if user want to update own email with existing one
-    const existing = await this.userRepo.findOne({ where: { email } });
+  async softDelete(userId: number, currentUser?: SafeUser) {
+    const user = await this.getUserOrFail({ id: userId });
 
-    if (existing && existing.id !== userId) {
-      throw new ConflictException('Email already in use');
+    if (currentUser?.id === user.id) {
+      throw new ForbiddenException('You cannot delete your own account');
+    }
+
+    if (user.resumeUrl) await deleteFile(user.resumeUrl);
+    await this.userRepo.softDelete(userId);
+  }
+
+  async restoreByAdmin(userId: number) {
+    const result = await this.userRepo.restore(userId);
+    if (!result.affected) {
+      throw new NotFoundException('User not found or already active');
     }
   }
 
-  async clearRefreshToken(userId: number) {
-    return this.userRepo.update(userId, { refreshToken: null });
+  /* -------------------------------------------------------------------------- */
+  /*                              INTERNAL BASE                                 */
+  /* -------------------------------------------------------------------------- */
+
+  private async getUserOrFail(
+    where: { id?: number; email?: string },
+    includeDeleted = false,
+  ) {
+    const user = await this.userRepo.findOne({
+      where,
+      withDeleted: includeDeleted,
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
-  async restoreByAdmin(id: number) {
-    const result = await this.userRepo.restore(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('User not found or already active');
+  private async ensureEmailAvailable(email: string, userId: number) {
+    const existing = await this.userRepo.findOne({ where: { email } });
+    if (existing && existing.id !== userId) {
+      throw new ConflictException('Email already in use');
     }
   }
 }

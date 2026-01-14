@@ -53,7 +53,7 @@ export class AdminUsersController {
   })
   @Get()
   async getAllUsers(@Query() query: AdminUserQueryDto) {
-    return this.usersService.findAll(query);
+    return this.usersService.getAllForAdmin(query);
   }
 
   @ApiOperation({ summary: 'Get a user by email (admin only)' })
@@ -76,7 +76,7 @@ export class AdminUsersController {
     @Param('email') email: string,
     @Query() query: AdminSingleUserQueryDto,
   ) {
-    return this.usersService.findOneByEmail(email, query);
+    return this.usersService.getUserForAdminByEmail(email, query.showDeleted);
   }
 
   @ApiOperation({ summary: 'Get a user by ID (admin only)' })
@@ -99,7 +99,7 @@ export class AdminUsersController {
     @Param('id', ParseIntPipe) id: number,
     @Query() query: AdminSingleUserQueryDto,
   ) {
-    return this.usersService.findOneById(id, query);
+    return this.usersService.getUserForAdminById(id, query.showDeleted);
   }
 
   @ApiOperation({ summary: 'Delete a user by ID (soft delete)' })

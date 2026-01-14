@@ -19,7 +19,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  // Never selected unless explicitly requested
+  @Column({ select: false })
   password: string;
 
   @Column({ name: 'first_name' })
@@ -31,7 +32,13 @@ export class User {
   @Column()
   location: string;
 
-  @Column({ name: 'refresh_token', type: 'text', nullable: true })
+  // Never selected unless explicitly requested
+  @Column({
+    name: 'refresh_token',
+    type: 'text',
+    nullable: true,
+    select: false,
+  })
   refreshToken: string | null = null;
 
   @Column({

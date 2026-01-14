@@ -36,7 +36,7 @@ export class JobsService {
     );
   }
 
-  private async findOneById(id: number, includeDeleted = false) {
+  private async findOneInternal(id: number, includeDeleted = false) {
     const job = await this.jobRepo.findOne({
       where: {
         id,
@@ -51,7 +51,7 @@ export class JobsService {
   }
 
   async findOneForUser(id: number) {
-    return this.findOneById(id);
+    return this.findOneInternal(id);
   }
 
   // Admin-Methods
@@ -65,7 +65,9 @@ export class JobsService {
     if (showDeleted) qb.withDeleted();
 
     if (company)
-      qb.andWhere('job.comapny ILIKE company', { company: `%${company}%` });
+      qb.andWhere('job.company ILIKE :company', {
+        company: `%${company}%`,
+      });
 
     if (location) {
       qb.andWhere('job.location ILIKE :location', {
@@ -88,7 +90,7 @@ export class JobsService {
   }
 
   async findOneForAdmin(id: number, dto?: AdminSingleJobQueryDto) {
-    return this.findOneById(id, dto?.showDeleted);
+    return this.findOneInternal(id, dto?.showDeleted);
   }
 
   async create(dto: CreateJobDto) {
@@ -113,7 +115,7 @@ export class JobsService {
   }
 
   async softDeleteForAdmin(id: number) {
-    await this.findOneById(id); // throws 404 if not found
+    await this.findOneInternal(id); // throws 404 if not found
     await this.jobRepo.softDelete(id);
   }
 }

@@ -32,11 +32,11 @@ export class ProfilesService {
   private readonly logger = new Logger(ProfilesService.name);
 
   async update(id: number, dto: UpdateProfileDto) {
-    return this.usersService.updateProfile(id, dto);
+    return this.usersService.updateProfileFields(id, dto);
   }
 
   async softDelete(id: number, dto: DeleteProfileDto) {
-    const user = await this.usersService.findOneById(id);
+    const user = await this.usersService.getUserWithSecretsById(id);
 
     const isMatch = await compare(dto.password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid password');
@@ -45,13 +45,13 @@ export class ProfilesService {
   }
 
   async changePassword(id: number, dto: ChangePasswordDto) {
-    const user = await this.usersService.findOneById(id);
+    const user = await this.usersService.getUserWithSecretsById(id);
 
     const isMatch = await compare(dto.currentPassword, user.password);
 
     if (!isMatch) throw new UnauthorizedException('Current password incorrect');
 
-    await this.usersService.changePassword(user, dto);
+    await this.usersService.changePassword(user, dto.newPassword);
   }
 
   async updateUserResumeUrl(userId: number, resumeUrl: string) {
@@ -77,7 +77,7 @@ export class ProfilesService {
       throw new NotFoundException('Resume not found');
     }
 
-    const userWithInfo = await this.usersService.findOneById(user.id);
+    const userWithInfo = await this.usersService.getPublicUserById(user.id);
 
     this.checkUserAuthorization(userWithInfo, filename);
 
